@@ -7,12 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-     "prepare": "node .husky/install.mjs"
+    "prepare": "node .husky/install.mjs"
   },
   "dependencies": {
     "next": "15.0.3",
+    "next-pwa": "^5.6.0",
     "react": "19.0.0-rc-66855b96-20241106",
-    "react-dom": "19.0.0-rc-66855b96-20241106"
+    "react-dom": "19.0.0-rc-66855b96-20241106",
+    "react-icons": "^5.4.0"
   },
   "devDependencies": {
     "@types/node": "^20",
