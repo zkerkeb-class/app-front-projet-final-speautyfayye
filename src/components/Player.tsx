@@ -12,7 +12,7 @@ import {
 } from 'react-icons/fa';
 
 const Player = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [volume, setVolume] = useState(50);
 
   return (

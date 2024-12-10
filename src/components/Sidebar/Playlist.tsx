@@ -1,6 +1,8 @@
 import { IoLibrary } from 'react-icons/io5';
 import { HiOutlinePlus } from 'react-icons/hi';
 
+// interface IProps {}
+
 const Playlist = () => {
   return (
     <div className="h-[calc(88vh-12rem)] w-full space-y-4 bg-neutral-800/30 pb-3">
