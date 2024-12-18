@@ -5,7 +5,7 @@ interface PlaylistAPIResponse {
 }
 
 export async function getPlaylists(): Promise<Playlist[]> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/user/playlists`);
+  const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/user/playlists/1`);
 
   if (!response.ok) {
     throw new Error('Failed to fetch playlists');

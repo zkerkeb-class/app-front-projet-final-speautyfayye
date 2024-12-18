@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
+import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 
 import Sidebar from '../components/Sidebar/Sidebar';
@@ -28,21 +29,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-dark text-light antialiased`}
-      >
-        <div className="flex h-screen flex-col">
-          <div className="flex flex-grow overflow-hidden">
-            <Sidebar />
-
-            <div className="flex flex-grow flex-col">
-              <Header />
-              <main className="flex-grow overflow-y-auto p-6">{children}</main>
-              <Player />
+    <html lang="fr" suppressHydrationWarning>
+      <head />
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange={false}
+        >
+          <div className="flex h-screen flex-col bg-background">
+            <div className="flex flex-grow overflow-hidden">
+              <Sidebar />
+              <div className="flex flex-grow flex-col">
+                <Header />
+                <main className="flex-grow overflow-y-auto bg-background/95 p-6 backdrop-blur-sm">
+                  {children}
+                </main>
+                <Player />
+              </div>
             </div>
           </div>
-        </div>
+        </ThemeProvider>
       </body>
     </html>
   );
