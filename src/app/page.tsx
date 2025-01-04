@@ -1,5 +1,4 @@
 import { getPlaylists } from '@/services/playlists';
-import { Playlist } from '@/models/playlist';
 import SongItem from '@/components/SongItem';
 import { IPlaylist } from '@/models/playlist';
 
