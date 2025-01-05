@@ -1,29 +1,13 @@
-import { getPlaylists } from '@/services/playlists';
-import SongItem from '@/components/SongItem';
-import { IPlaylist } from '@/models/playlist';
+import Album from '@/components/Album/Album';
+import Artists from '@/components/Artists/Artists';
+import Playlists from '@/components/Playlists/Playlists';
 
 export default async function Home() {
-  let playlists: IPlaylist[] = [];
-  try {
-    playlists = await getPlaylists();
-  } catch (error) {
-    console.error('Error fetching playlists:', error);
-  }
-
   return (
-    <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-8">
-      {playlists.length > 0 ? (
-        playlists.map((playlist) => (
-          <SongItem
-            key={playlist.id}
-            title={playlist.title}
-            artist="Unknown Artist"
-            imageUrl="https://cdn.pixabay.com/photo/2024/02/26/19/51/guitar-8598823_640.jpg"
-          />
-        ))
-      ) : (
-        <p>No playlists available.</p>
-      )}
+    <div className="mb-20 flex flex-col gap-5">
+      <Playlists />
+      <Artists />
+      <Album />
     </div>
   );
 }
