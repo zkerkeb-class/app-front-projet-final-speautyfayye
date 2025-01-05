@@ -1,20 +1,33 @@
-import React from 'react';
-import { getPlaylists } from '@/services/playlists';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import PlayButton from '../PlayButton';
 import Image from 'next/image';
+import { getPlaylists } from '@/services/playlists';
 import { defaultPlaylistImages } from '@/constants/data';
+import { IPlaylist } from '@/models/playlist';
 
-const Playlists = async () => {
-  const playlists = await getPlaylists();
+const Playlists = () => {
+  const [playlists, setPlaylists] = useState<IPlaylist[]>([]);
 
-  // Limiter à 9 playlists
-  const limitedPlaylists = playlists.slice(0, 9);
+  useEffect(() => {
+    const fetchPlaylists = async () => {
+      try {
+        const fetchedPlaylists = await getPlaylists();
+        setPlaylists(fetchedPlaylists.slice(0, 9)); // Limiter à 9 playlists
+      } catch (error) {
+        console.error('Erreur lors du chargement des playlists :', error);
+      }
+    };
+
+    fetchPlaylists();
+  }, []); // Dépendances vides pour exécuter une seule fois au montage
 
   return (
     <div className="">
       <h1 className="mb-4 text-2xl font-bold">Playlists</h1>
       <div className="flex w-max space-x-4">
-        {limitedPlaylists.map((playlist, index) => (
+        {playlists.map((playlist, index) => (
           <div
             key={playlist.id}
             className="group relative flex flex-col items-center justify-center gap-x-4 overflow-hidden rounded-md bg-neutral-400/5 p-3 transition hover:bg-neutral-400/10"

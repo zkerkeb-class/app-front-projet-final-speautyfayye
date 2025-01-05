@@ -1,30 +1,47 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import PlayButton from '../PlayButton';
 import Image from 'next/image';
 import { getAlbums } from '@/services/album';
 import { defaultAlbumImages } from '@/constants/data';
+import { IAlbum } from '@/models/album';
+import { useRouter } from 'next/navigation';
 
-const Album = async () => {
-  const albums = await getAlbums();
+const Album = () => {
+  const router = useRouter();
+  const [albums, setAlbums] = useState<IAlbum[]>([]);
 
-  // Limiter à 9 albums
-  const limitedAlbums = albums.slice(0, 9);
+  useEffect(() => {
+    const fetchAlbums = async () => {
+      try {
+        const fetchedAlbums = await getAlbums();
+        setAlbums(fetchedAlbums.slice(0, 9));
+      } catch (error) {
+        console.error('Erreur lors du chargement des albums :', error);
+      }
+    };
+
+    fetchAlbums();
+  }, []);
+
+  const handleAlbumClick = (albumId: number) => {
+    router.push(`/album/${albumId}`);
+  };
 
   return (
-    <div className="">
+    <div>
       <h1 className="mb-4 text-2xl font-bold">Albums</h1>
       <div className="flex w-max space-x-4">
-        {limitedAlbums.map((album, index) => (
+        {albums.map((album, index) => (
           <div
             key={album.id}
+            onClick={() => handleAlbumClick(album.id)}
             className="group relative flex flex-col items-center justify-center gap-x-4 overflow-hidden rounded-md bg-neutral-400/5 p-3 transition hover:bg-neutral-400/10"
           >
             <div className="relative aspect-square h-32 w-32 overflow-hidden rounded-md">
               <Image
-                src={
-                  album.picture || // Utiliser l'image spécifique à l'album si disponible
-                  defaultAlbumImages[index % defaultAlbumImages.length] // Image par défaut cyclique
-                }
+                src={album.picture || defaultAlbumImages[index % defaultAlbumImages.length]}
                 alt={album.title}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

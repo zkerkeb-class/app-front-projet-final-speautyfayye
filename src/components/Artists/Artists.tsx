@@ -1,20 +1,33 @@
-import React from 'react';
-import { getArtists } from '@/services/artists';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import PlayButton from '../PlayButton';
 import Image from 'next/image';
+import { getArtists } from '@/services/artists';
 import { defaultArtistImages } from '@/constants/data';
+import { IArtist } from '@/models/artist';
 
-const Artists = async () => {
-  const artists = await getArtists();
+const Artists = () => {
+  const [artists, setArtists] = useState<IArtist[]>([]);
 
-  // Limiter à 9 artistes
-  const limitedArtists = artists.slice(0, 9);
+  useEffect(() => {
+    const fetchArtists = async () => {
+      try {
+        const fetchedArtists = await getArtists();
+        setArtists(fetchedArtists.slice(0, 9)); // Limiter à 9 artistes
+      } catch (error) {
+        console.error('Erreur lors du chargement des artistes :', error);
+      }
+    };
+
+    fetchArtists();
+  }, []); // Appeler une seule fois lors du montage
 
   return (
     <div className="">
       <h1 className="mb-4 text-2xl font-bold">Artistes Populaires</h1>
       <div className="flex w-max space-x-4">
-        {limitedArtists.map((artist, index) => (
+        {artists.map((artist, index) => (
           <div
             key={artist.id}
             className="group relative flex flex-col items-center justify-center gap-x-4 overflow-hidden rounded-md bg-neutral-400/5 p-3 transition hover:bg-neutral-400/10"
