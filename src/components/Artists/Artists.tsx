@@ -21,12 +21,11 @@ const Artists = async () => {
           >
             <div className="relative aspect-square h-32 w-32 overflow-hidden rounded-md">
               <Image
-                src={
-                  artist.picture || // Utiliser l'image spécifique à l'artiste si disponible
-                  defaultArtistImages[index % defaultArtistImages.length] // Sélectionner une image par défaut en fonction de l'index
-                }
+                src={artist.picture || defaultArtistImages[index % defaultArtistImages.length]}
                 alt={artist.name}
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                priority
               />
             </div>
             <div className="flex w-full flex-col items-start gap-y-1 pt-4">

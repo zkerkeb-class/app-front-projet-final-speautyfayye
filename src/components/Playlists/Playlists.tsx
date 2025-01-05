@@ -26,6 +26,8 @@ const Playlists = async () => {
                 }
                 alt={playlist.title}
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                priority
               />
             </div>
             <div className="flex w-full flex-col items-start gap-y-1 pt-4">
