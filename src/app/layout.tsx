@@ -39,10 +39,10 @@ export default function RootLayout({
           disableTransitionOnChange={false}
         >
           <div className="flex h-screen flex-col bg-background">
+            <Header />
             <div className="flex flex-grow overflow-hidden">
               <Sidebar />
               <div className="flex flex-grow flex-col">
-                <Header />
                 <main className="flex-grow overflow-y-auto bg-background/95 p-6 backdrop-blur-sm">
                   {children}
                 </main>

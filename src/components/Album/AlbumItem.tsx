@@ -32,4 +32,3 @@ const AlbumItem: React.FC<AlbumItemProps> = ({ name, imageUrl, bio }) => {
 };
 
 export default AlbumItem;
-// Compare this snippet from app-front-projet-final-speautyfayye/src/components/Album/AlbumItem.tsx:
