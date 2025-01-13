@@ -1,7 +1,11 @@
-import { IAlbum, Album } from '@/models/album';
+import { IAlbum, Album, IAlbumExt } from '@/models/album';
 
 interface AlbumAPIResponse {
   data: IAlbum;
+}
+
+interface IAlbumExtAPIResponse {
+  data: IAlbumExt;
 }
 
 export async function getAlbums(): Promise<Album[]> {
@@ -27,8 +31,8 @@ export async function getAlbums(): Promise<Album[]> {
 }
 
 // Get an album by its ID
-export async function getAlbumById(id: number): Promise<Album> {
+export async function getAlbumById(id: number): Promise<IAlbumExt> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/album/${id}`);
-  const albumData: AlbumAPIResponse = await response.json();
-  return new Album(albumData.data); // Create an instance of Album
+  const albumData: IAlbumExtAPIResponse = await response.json();
+  return albumData.data;
 }

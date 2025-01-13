@@ -1,34 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Play, Pause } from 'lucide-react';
+import { getAlbumById } from '@/services/album';
+import { IAlbumExt } from '@/models/album';
+import { useParams } from 'next/navigation';
+import { formatDuration } from '@/constants/data';
 
 const Page = () => {
-  const [selectedTrack, setSelectedTrack] = useState<number | null>(null);
+  const { id } = useParams();
+  const [album, setAlbum] = useState<IAlbumExt | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [selectedTrack, setSelectedTrack] = useState<number | null>(null);
 
-  const mockAlbum = {
-    title: 'Random Access Memories',
-    releaseDate: '2023-05-12',
-    picture: 'https://cdn.pixabay.com/photo/2016/09/10/11/11/musician-1658887_1280.jpg',
-    tracks: [
-      { id: 1, title: 'Get Lucky', duration: 248.2 },
-      { id: 2, title: 'Instant Crush', duration: 337.8 },
-      { id: 3, title: 'Lose Yourself to Dance', duration: 294.5 },
-      { id: 4, title: 'Touch', duration: 498.7 },
-      { id: 5, title: 'Within', duration: 228.4 },
-      { id: 6, title: 'Beyond', duration: 290.1 },
-      { id: 7, title: 'Motherboard', duration: 341.2 },
-      { id: 8, title: 'Fragments of Time', duration: 279.3 },
-    ],
-  };
+  useEffect(() => {
+    const fetchAlbum = async () => {
+      try {
+        if (id) {
+          setIsLoading(true);
+          const albumData = await getAlbumById(Number(id));
+          setAlbum(albumData);
+        }
+      } catch (error) {
+        console.error('Error fetching album:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const formatDuration = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+    fetchAlbum();
+  }, [id]);
 
   const handleTrackClick = (trackId: number) => {
     if (selectedTrack === trackId) {
@@ -39,13 +42,31 @@ const Page = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center text-neutral-700 dark:text-white">
+        Loading album...
+      </div>
+    );
+  }
+
+  if (!album) {
+    return (
+      <div className="flex h-full w-full items-center justify-center text-neutral-700 dark:text-white">
+        Album not found.
+      </div>
+    );
+  }
+
   return (
     <div className="h-full w-full overflow-hidden overflow-y-auto bg-gradient-to-b from-neutral-100 to-neutral-200 pb-24 dark:from-neutral-900 dark:to-black sm:pb-32">
-      {/* Hero Section reste inchangé */}
       <div className="relative min-h-[350px] w-full sm:min-h-[400px] md:min-h-[450px] lg:min-h-[500px]">
         <Image
-          src={mockAlbum.picture}
-          alt={mockAlbum.title}
+          src={
+            album.picture ||
+            'https://cdn.pixabay.com/photo/2016/09/10/11/11/musician-1658887_1280.jpg'
+          }
+          alt={album.title}
           fill
           className="object-cover opacity-40 blur-sm"
           priority
@@ -55,8 +76,11 @@ const Page = () => {
         <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center p-4 text-center sm:p-6 md:flex-row md:items-end md:p-8 md:text-left lg:p-10">
           <div className="mb-4 h-48 w-48 flex-shrink-0 overflow-hidden rounded-lg shadow-2xl sm:h-52 sm:w-52 md:mb-0 md:mr-6 lg:h-64 lg:w-64">
             <Image
-              src={mockAlbum.picture}
-              alt={mockAlbum.title}
+              src={
+                album.picture ||
+                'https://cdn.pixabay.com/photo/2016/09/10/11/11/musician-1658887_1280.jpg'
+              }
+              alt={album.title}
               width={256}
               height={256}
               className="h-full w-full object-cover"
@@ -65,23 +89,24 @@ const Page = () => {
 
           <div className="mb-2 md:mb-6">
             <h1 className="text-2xl font-bold text-white sm:text-3xl md:text-4xl lg:text-5xl">
-              {mockAlbum.title}
+              {album.title}
             </h1>
             <p className="mt-2 text-sm text-neutral-300 sm:mt-3 md:mt-4 md:text-base lg:text-lg">
-              Released: {new Date(mockAlbum.releaseDate).getFullYear()} • {mockAlbum.tracks.length}{' '}
-              tracks • 45 min
+              Released: {new Date(album.releaseDate).getFullYear()} • {album.tracks?.length || 0}{' '}
+              tracks
             </p>
           </div>
         </div>
       </div>
 
-      {/* Content Section */}
       <div className="px-4 py-4 sm:px-6 md:px-8 lg:px-10 lg:py-6">
         <div className="mb-6 flex items-center gap-x-4 sm:mb-8">
           <button
             onClick={() => {
               setIsPlaying(!isPlaying);
-              if (!selectedTrack) setSelectedTrack(mockAlbum.tracks[0].id);
+              if (!selectedTrack && album.tracks?.length) {
+                setSelectedTrack(album.tracks[0].id);
+              }
             }}
             className="group flex h-12 w-12 items-center justify-center rounded-full bg-green-500 transition hover:scale-105 hover:bg-green-400 sm:h-14 sm:w-14"
           >
@@ -98,7 +123,7 @@ const Page = () => {
             Tracks
           </h2>
           <div className="flex flex-col gap-y-1">
-            {mockAlbum.tracks.map((track, index) => (
+            {album.tracks?.map((track, index) => (
               <div
                 key={track.id}
                 onClick={() => handleTrackClick(track.id)}
@@ -108,7 +133,6 @@ const Page = () => {
               >
                 <div className="flex w-full items-center justify-between">
                   <div className="flex items-center gap-x-3 sm:gap-x-6">
-                    {/* Play button that appears on hover or when selected */}
                     <div className="relative w-5 sm:w-6">
                       <span
                         className={`absolute text-sm text-neutral-400 group-hover:opacity-0 sm:text-base ${
@@ -142,11 +166,11 @@ const Page = () => {
                     </div>
                   </div>
                   <div className="text-xs text-neutral-500 group-hover:text-white sm:text-sm">
-                    {formatDuration(track.duration)}
+                    {formatDuration(Number(track.duration))}
                   </div>
                 </div>
               </div>
-            ))}
+            )) || <div className="text-neutral-500">No tracks available for this album.</div>}
           </div>
         </div>
       </div>

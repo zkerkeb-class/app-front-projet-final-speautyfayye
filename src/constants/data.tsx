@@ -27,3 +27,9 @@ export const defaultPlaylistImages = [
   'https://cdn.pixabay.com/photo/2017/08/07/22/43/technology-2608742_1280.jpg',
   'https://cdn.pixabay.com/photo/2017/08/06/12/54/headphones-2592263_1280.jpg',
 ];
+
+export const formatDuration = (duration: number) => {
+  const minutes = Math.floor(duration / 60);
+  const seconds = Math.floor(duration % 60);
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
