@@ -8,10 +8,11 @@ export interface ITrack {
   duration: string;
   releaseDate: Date;
   trackNumber: number;
-  albumId: number;
+  album_id: number;
   categoryId: number;
   picture?: string;
   audio: string;
+  lyrics?: string;
 }
 
 export interface ITrackExt extends ITrack {
@@ -26,10 +27,11 @@ export class Track implements ITrack {
   duration: string;
   releaseDate: Date;
   trackNumber: number;
-  albumId: number;
+  album_id: number;
   categoryId: number;
   picture?: string;
   audio: string;
+  lyrics?: string;
 
   constructor(data: ITrack) {
     this.id = data.id;
@@ -37,10 +39,11 @@ export class Track implements ITrack {
     this.duration = data.duration;
     this.releaseDate = new Date(data.releaseDate); // Convertit les chaînes de date en objets Date.
     this.trackNumber = data.trackNumber;
-    this.albumId = data.albumId;
+    this.album_id = data.album_id;
     this.categoryId = data.categoryId;
     this.picture = data.picture;
     this.audio = data.audio;
+    this.lyrics = data.lyrics;
   }
 }
 

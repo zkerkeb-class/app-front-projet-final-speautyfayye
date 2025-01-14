@@ -12,7 +12,8 @@ export const playerContext = createContext<{
   pause: () => {},
   play: () => {},
 });
-export const audioContext = createContext<{
+
+export const trackContext = createContext<{
   track: ITrackExt | undefined;
   setTrack: Dispatch<SetStateAction<ITrackExt | undefined>>;
 }>({
@@ -20,8 +21,19 @@ export const audioContext = createContext<{
   setTrack: () => {},
 });
 
+export const nextTracksContext = createContext<{
+  nextTracks: ITrackExt[] | undefined;
+  setNextTracks: Dispatch<SetStateAction<ITrackExt[] | undefined>>;
+  shuffle: (tracks: ITrackExt[] | undefined) => void;
+}>({
+  nextTracks: undefined,
+  setNextTracks: () => {},
+  shuffle: (tracks: ITrackExt[] | undefined) => {},
+});
+
 export default function Providers({ children }: any) {
   const [track, setTrack] = useState<ITrackExt | undefined>();
+  const [nextTracks, setNextTracks] = useState<ITrackExt[] | undefined>(undefined);
   const [isPlaying, setIsPlaying] = useState(false);
 
   const pause = () => {
@@ -31,9 +43,31 @@ export default function Providers({ children }: any) {
     setIsPlaying(true);
   };
 
+  const shuffle = (tracks: ITrackExt[] | undefined) => {
+    if (tracks && track) {
+      const firstTrack = tracks.find((t) => t.id === track.id);
+
+      if (!firstTrack) {
+        throw new Error('Track with the specified ID not found.');
+      }
+
+      const remainingTracks = tracks.filter((t) => t.id !== track.id);
+      const shuffledTracks = remainingTracks
+        .map((value) => ({ value, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ value }) => value);
+
+      setNextTracks([firstTrack, ...shuffledTracks]);
+    }
+  };
+
   return (
-    <audioContext.Provider value={{ track, setTrack }}>
-      <playerContext.Provider value={{ isPlaying, pause, play }}>{children}</playerContext.Provider>
-    </audioContext.Provider>
+    <trackContext.Provider value={{ track, setTrack }}>
+      <nextTracksContext.Provider value={{ nextTracks: nextTracks, setNextTracks, shuffle }}>
+        <playerContext.Provider value={{ isPlaying, pause, play }}>
+          {children}
+        </playerContext.Provider>
+      </nextTracksContext.Provider>
+    </trackContext.Provider>
   );
 }
