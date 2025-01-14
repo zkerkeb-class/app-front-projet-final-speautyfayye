@@ -6,6 +6,8 @@ import './globals.css';
 import Sidebar from '../components/Sidebar/Sidebar';
 import Header from '../components/Header';
 import Player from '../components/Player';
+import AudioPlayer from '@/components/audioPlayer';
+import Providers from './providers';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -36,25 +38,28 @@ export default function RootLayout({
         <meta name="theme-color" content="#000000" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange={false}
-        >
-          <div className="flex h-screen flex-col bg-background">
-            <Header />
-            <div className="flex flex-grow overflow-hidden">
-              <Sidebar />
-              <div className="flex flex-grow flex-col">
-                <main className="flex-grow overflow-y-auto bg-background/95 p-6 backdrop-blur-sm">
-                  {children}
-                </main>
-                <Player />
+        <Providers>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange={false}
+          >
+            <div className="flex h-screen flex-col bg-background">
+              <Header />
+              <div className="flex flex-grow overflow-hidden">
+                <Sidebar />
+                <div className="flex flex-grow flex-col">
+                  <main className="flex-grow overflow-y-auto bg-background/95 p-6 backdrop-blur-sm">
+                    {children}
+                  </main>
+                  {/* <Player /> */}
+                  <AudioPlayer />
+                </div>
               </div>
             </div>
-          </div>
-        </ThemeProvider>
+          </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );
