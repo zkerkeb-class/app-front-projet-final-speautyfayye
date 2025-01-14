@@ -6,11 +6,9 @@ import { trackContext, playerContext, nextTracksContext } from '@/app/providers'
 import { ITrack } from '@/models/track';
 import Image from 'next/image';
 import {
-  Cross,
   ListMusic,
   Maximize2,
   Mic2,
-  MonitorSpeaker,
   Pause,
   Play,
   Repeat,
@@ -40,30 +38,6 @@ const AudioPlayer: React.FC = () => {
   const track = useContext(trackContext);
   const nextTracks = useContext(nextTracksContext);
   const player = useContext(playerContext);
-
-  useEffect(() => {
-    if (track.track) {
-      setIsLoading(true);
-      player.pause();
-      getAudio(track.track);
-    }
-  }, [track.track]);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      if (player.isPlaying) {
-        audioRef.current.play();
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [player.isPlaying]);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume / 100;
-    }
-  }, [volume]);
 
   const getAudio = async (track: ITrack) => {
     const audio = await fetchAudio(track.id);
@@ -97,6 +71,30 @@ const AudioPlayer: React.FC = () => {
     }
     setCurrentTime(newTime);
   };
+
+  useEffect(() => {
+    if (track.track) {
+      setIsLoading(true);
+      player.pause();
+      getAudio(track.track);
+    }
+  }, [track.track, player]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (player.isPlaying) {
+        audioRef.current.play();
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [player.isPlaying]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume / 100;
+    }
+  }, [volume]);
 
   return (
     <>

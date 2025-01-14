@@ -1,7 +1,7 @@
 'use client';
 
 import { ITrackExt } from '@/models/track';
-import { createContext, Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { createContext, Dispatch, SetStateAction, useState } from 'react';
 
 export const playerContext = createContext<{
   isPlaying: boolean;
@@ -28,10 +28,10 @@ export const nextTracksContext = createContext<{
 }>({
   nextTracks: undefined,
   setNextTracks: () => {},
-  shuffle: (tracks: ITrackExt[] | undefined) => {},
+  shuffle: () => {},
 });
 
-export default function Providers({ children }: any) {
+export default function Providers({ children }: { children: React.ReactNode }) {
   const [track, setTrack] = useState<ITrackExt | undefined>();
   const [nextTracks, setNextTracks] = useState<ITrackExt[] | undefined>(undefined);
   const [isPlaying, setIsPlaying] = useState(false);
