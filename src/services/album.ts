@@ -1,33 +1,24 @@
 import { IAlbum, Album, IAlbumExt } from '@/models/album';
 
 interface AlbumAPIResponse {
-  data: IAlbum;
+  data: IAlbum[];
 }
 
 interface IAlbumExtAPIResponse {
   data: IAlbumExt;
 }
 
-export async function getAlbums(): Promise<Album[]> {
-  // Create an array of IDs from 1 to 9
-  const ids = Array.from({ length: 9 }, (_, index) => index + 1);
-
-  // Fetch albums for each ID in parallel
-  const fetchPromises = ids.map((id) =>
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/album/${id}`).then(async (response) => {
-      if (!response.ok) {
-        throw new Error(`Failed to fetch album with ID: ${id}`);
-      }
-      const albumData: AlbumAPIResponse = await response.json();
-      return new Album(albumData.data); // Create an instance of Album
-    }),
+export async function getAlbums(category_id?: string): Promise<Album[]> {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_API}/album${category_id ? `?category_id=${category_id}` : ''}`,
   );
 
-  // Wait for all requests to complete
-  const allAlbums = await Promise.all(fetchPromises);
+  if (!response.ok) {
+    throw new Error('Failed to fetch albums');
+  }
 
-  // Return the array of Album instances
-  return allAlbums;
+  const albumData: AlbumAPIResponse = await response.json();
+  return albumData.data.map((item) => new Album(item));
 }
 
 // Get an album by its ID
