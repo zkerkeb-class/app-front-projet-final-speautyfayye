@@ -5,7 +5,6 @@ import './globals.css';
 
 import Sidebar from '../components/Sidebar/Sidebar';
 import Header from '../components/Header';
-import Player from '../components/Player';
 import AudioPlayer from '@/components/audioPlayer';
 import Providers from './providers';
 
@@ -53,7 +52,6 @@ export default function RootLayout({
                   <main className="flex-grow overflow-y-auto bg-background/95 p-6 backdrop-blur-sm">
                     {children}
                   </main>
-                  {/* <Player /> */}
                   <AudioPlayer />
                 </div>
               </div>

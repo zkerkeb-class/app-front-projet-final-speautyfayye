@@ -8,7 +8,7 @@ import { IAlbumExt } from '@/models/album';
 import { useParams } from 'next/navigation';
 import { formatDuration } from '@/constants/data';
 import { audioContext, playerContext } from '@/app/providers';
-import { ITrack } from '@/models/track';
+import { ITrack, ITrackExt } from '@/models/track';
 
 const Page = () => {
   const audio = useContext(audioContext);
@@ -36,7 +36,7 @@ const Page = () => {
     fetchAlbum();
   }, [id]);
 
-  const handleTrackClick = (track: ITrack) => {
+  const handleTrackClick = (track: ITrackExt) => {
     if (track === audio.track) {
       if (player.isPlaying) {
         player.pause();
@@ -44,7 +44,7 @@ const Page = () => {
         player.play();
       }
     } else {
-      audio.setAudio(track);
+      audio.setTrack({ ...track, artist: album?.artist });
     }
   };
 
@@ -93,10 +93,13 @@ const Page = () => {
             />
           </div>
 
-          <div className="mb-2 md:mb-6">
+          <div className="mb-2 space-y-2 md:mb-6">
             <h1 className="text-2xl font-bold text-white sm:text-3xl md:text-4xl lg:text-5xl">
-              {album.title}
+              {album.artist?.name}
             </h1>
+            <h2 className="text-xl font-bold text-neutral-300 sm:text-3xl md:text-4xl lg:text-5xl">
+              {album.title}
+            </h2>
             <p className="mt-2 text-sm text-neutral-300 sm:mt-3 md:mt-4 md:text-base lg:text-lg">
               Released: {new Date(album.releaseDate).getFullYear()} • {album.tracks?.length || 0}{' '}
               tracks

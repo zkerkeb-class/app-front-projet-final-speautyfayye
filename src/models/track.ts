@@ -1,4 +1,5 @@
 import { Album } from './album';
+import { IArtist } from './artist';
 import { Category } from './category';
 
 export interface ITrack {
@@ -16,6 +17,7 @@ export interface ITrack {
 export interface ITrackExt extends ITrack {
   category?: Category | null;
   album?: Album | null;
+  artist?: IArtist | null;
 }
 
 export class Track implements ITrack {

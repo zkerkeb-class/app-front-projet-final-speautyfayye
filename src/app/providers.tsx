@@ -1,6 +1,6 @@
 'use client';
 
-import { ITrack } from '@/models/track';
+import { ITrackExt } from '@/models/track';
 import { createContext, Dispatch, SetStateAction, useEffect, useState } from 'react';
 
 export const playerContext = createContext<{
@@ -13,28 +13,26 @@ export const playerContext = createContext<{
   play: () => {},
 });
 export const audioContext = createContext<{
-  track: ITrack | undefined;
-  setAudio: Dispatch<SetStateAction<ITrack | undefined>>;
+  track: ITrackExt | undefined;
+  setTrack: Dispatch<SetStateAction<ITrackExt | undefined>>;
 }>({
   track: undefined,
-  setAudio: () => {},
+  setTrack: () => {},
 });
 
 export default function Providers({ children }: any) {
-  const [track, setAudioId] = useState<ITrack | undefined>();
+  const [track, setTrack] = useState<ITrackExt | undefined>();
   const [isPlaying, setIsPlaying] = useState(false);
 
   const pause = () => {
-    console.log('pause');
     setIsPlaying(false);
   };
   const play = () => {
-    console.log('play');
     setIsPlaying(true);
   };
 
   return (
-    <audioContext.Provider value={{ track, setAudio: setAudioId }}>
+    <audioContext.Provider value={{ track, setTrack }}>
       <playerContext.Provider value={{ isPlaying, pause, play }}>{children}</playerContext.Provider>
     </audioContext.Provider>
   );
