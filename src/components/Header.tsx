@@ -2,8 +2,10 @@
 
 import { ModeToggle } from './ModeToggle';
 import { useState } from 'react';
-import { Home, Search, Menu } from 'lucide-react';
+import { Search, Menu } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
+// import LanguageSwitcher from './LanguageSwitcher';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,7 +18,8 @@ const Header = () => {
           <Menu className="h-6 w-6" />
         </button>
         <Link href="/" className="hidden text-foreground hover:text-muted-foreground lg:block">
-          <Home className="h-6 w-6" />
+          {/* <Home className="h-6 w-6" /> */}
+          <Image src="/logo.png" alt="Speautyfayye" width={65} height={65} />
         </Link>
       </div>
 
@@ -34,6 +37,7 @@ const Header = () => {
 
       {/* Section droite */}
       <div className="flex items-center gap-2 md:gap-4">
+        {/* <LanguageSwitcher /> */}
         <Link
           href="/login"
           className="rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background hover:bg-muted-foreground sm:px-8 sm:text-base"
