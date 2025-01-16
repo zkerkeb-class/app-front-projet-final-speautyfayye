@@ -31,9 +31,11 @@ const AudioPlayer: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [volume, setVolume] = useState(50);
   const [isRepeating, setIsRepeating] = useState(false);
-  const [LyricsOpen, setLyricsOpen] = useState(false);
-  const [NextTracksOpen, setNextTracksOpen] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
+
+  const [isLyricsOpen, setIsLyricsOpen] = useState(false);
+  const [isNextTracksOpen, setIsNextTracksOpen] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   const track = useContext(trackContext);
   const nextTracks = useContext(nextTracksContext);
@@ -123,13 +125,13 @@ const AudioPlayer: React.FC = () => {
         />
       )}
       {/* Lyrics */}
-      {LyricsOpen && (
+      {isLyricsOpen && (
         <div className="fixed bottom-0 left-0 right-0 z-50 h-screen overflow-y-auto border-t border-neutral-800 bg-white pb-28 dark:border-neutral-800 dark:bg-black">
           <div className="relative flex min-h-full items-center justify-center p-4">
             <div className="fixed right-8 top-8">
               <X
                 className="h-6 w-6 cursor-pointer text-neutral-500 hover:text-neutral-900 dark:text-white dark:hover:text-white"
-                onClick={() => setLyricsOpen(false)}
+                onClick={() => setIsLyricsOpen(false)}
               />
             </div>
             {track.track?.lyrics && (
@@ -146,13 +148,13 @@ const AudioPlayer: React.FC = () => {
         </div>
       )}
       {/* NextTracks */}
-      {NextTracksOpen && (
+      {isNextTracksOpen && (
         <div className="fixed bottom-0 left-0 right-0 z-50 h-screen overflow-y-auto border-t border-neutral-800 bg-white pb-28 dark:border-neutral-800 dark:bg-black">
           <div className="relative flex min-h-full items-center justify-center p-4">
             <div className="fixed right-8 top-8">
               <X
                 className="h-6 w-6 cursor-pointer text-neutral-500 hover:text-neutral-900 dark:text-white dark:hover:text-white"
-                onClick={() => setNextTracksOpen(false)}
+                onClick={() => setIsNextTracksOpen(false)}
               />
             </div>
             <div className="min-w-[60%]">
@@ -166,6 +168,36 @@ const AudioPlayer: React.FC = () => {
           </div>
         </div>
       )}
+      {/* FullScreen */}
+      {isFullScreen && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 h-screen overflow-y-auto border-t border-neutral-800 bg-white pb-28 dark:border-neutral-800 dark:bg-black">
+          <div className="relative flex min-h-full items-center justify-center p-4">
+            <div className="fixed right-8 top-8">
+              <X
+                className="h-6 w-6 cursor-pointer text-neutral-500 hover:text-neutral-900 dark:text-white dark:hover:text-white"
+                onClick={() => setIsNextTracksOpen(false)}
+              />
+            </div>
+            <div className="flex min-w-[60%] gap-4">
+              <div className="w-1/2">
+                <Image
+                  src="https://cdn.pixabay.com/photo/2016/09/10/11/11/musician-1658887_1280.jpg"
+                  alt="Album cover"
+                  className="rounded"
+                  width={400}
+                  height={400}
+                />
+              </div>
+              <div>
+                <h2>{track.track?.title}</h2>
+                <h2>{track.track?.artist?.name}</h2>
+                <p>Catégorie: {track.track?.category?.name}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Page principale */}
       <div className="fixed bottom-0 left-0 right-0 z-50 h-28 border-t border-neutral-800 bg-white dark:border-neutral-800 dark:bg-black">
         <div className="grid h-full grid-cols-1 items-center px-4 sm:grid-cols-3">
           {/* Left section - Song info */}
@@ -318,7 +350,9 @@ const AudioPlayer: React.FC = () => {
               disabled={!track.track?.lyrics}
               onClick={() => {
                 if (!track.track?.lyrics) return;
-                setLyricsOpen(!LyricsOpen);
+                setIsLyricsOpen(!isLyricsOpen);
+                setIsFullScreen(false);
+                setIsNextTracksOpen(false);
               }}
             >
               <Mic2 className="h-4 w-4" />
@@ -329,7 +363,9 @@ const AudioPlayer: React.FC = () => {
               disabled={!nextTracks.nextTracks}
               onClick={() => {
                 if (!nextTracks.nextTracks) return;
-                setNextTracksOpen(!NextTracksOpen);
+                setIsNextTracksOpen(!isNextTracksOpen);
+                setIsFullScreen(false);
+                setIsLyricsOpen(false);
               }}
             >
               <ListMusic className="h-4 w-4" />
@@ -349,7 +385,16 @@ const AudioPlayer: React.FC = () => {
                 onValueChange={handleVolumeChange}
               />
             </div>
-            <button className="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">
+            <button
+              onClick={() => {
+                if (!track.track) return;
+                setIsFullScreen(!isFullScreen);
+                setIsNextTracksOpen(false);
+                setIsLyricsOpen(false);
+              }}
+              disabled={!track.track}
+              className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
+            >
               <Maximize2 className="h-4 w-4" />
             </button>
           </div>
