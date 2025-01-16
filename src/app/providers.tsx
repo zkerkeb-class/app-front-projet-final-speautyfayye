@@ -2,8 +2,9 @@
 
 import { I18nProviderClient } from '@/locales/client';
 import { ITrackExt } from '@/models/track';
-import { createContext, Dispatch, SetStateAction, useState } from 'react';
+import { createContext, Dispatch, SetStateAction, useState, useCallback, useMemo } from 'react';
 
+// Contexts
 export const playerContext = createContext<{
   isPlaying: boolean;
   pause: Dispatch<SetStateAction<void>>;
@@ -32,6 +33,7 @@ export const nextTracksContext = createContext<{
   shuffle: () => {},
 });
 
+// Providers Component
 export default function Providers({
   children,
   locale,
@@ -43,19 +45,26 @@ export default function Providers({
   const [nextTracks, setNextTracks] = useState<ITrackExt[] | undefined>(undefined);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const pause = () => {
+  // Callback Functions
+  const pause = useCallback(() => {
     setIsPlaying(false);
-  };
-  const play = () => {
+  }, []);
+
+  const play = useCallback(() => {
     setIsPlaying(true);
-  };
+  }, []);
 
-  const shuffle = (tracks: ITrackExt[] | undefined) => {
-    if (tracks && track) {
+  const shuffle = useCallback(
+    (tracks: ITrackExt[] | undefined) => {
+      if (!tracks || !track) {
+        console.warn('Cannot shuffle: tracks or current track is undefined.');
+        return;
+      }
+
       const firstTrack = tracks.find((t) => t.id === track.id);
-
       if (!firstTrack) {
-        throw new Error('Track with the specified ID not found.');
+        console.warn('Track with the specified ID not found.');
+        return;
       }
 
       const remainingTracks = tracks.filter((t) => t.id !== track.id);
@@ -65,16 +74,23 @@ export default function Providers({
         .map(({ value }) => value);
 
       setNextTracks([firstTrack, ...shuffledTracks]);
-    }
-  };
+    },
+    [track],
+  );
+
+  // Memoized Values for Contexts
+  const playerContextValue = useMemo(() => ({ isPlaying, pause, play }), [isPlaying, pause, play]);
+  const trackContextValue = useMemo(() => ({ track, setTrack }), [track]);
+  const nextTracksContextValue = useMemo(
+    () => ({ nextTracks, setNextTracks, shuffle }),
+    [nextTracks, shuffle],
+  );
 
   return (
     <I18nProviderClient locale={locale}>
-      <trackContext.Provider value={{ track, setTrack }}>
-        <nextTracksContext.Provider value={{ nextTracks: nextTracks, setNextTracks, shuffle }}>
-          <playerContext.Provider value={{ isPlaying, pause, play }}>
-            {children}
-          </playerContext.Provider>
+      <trackContext.Provider value={trackContextValue}>
+        <nextTracksContext.Provider value={nextTracksContextValue}>
+          <playerContext.Provider value={playerContextValue}>{children}</playerContext.Provider>
         </nextTracksContext.Provider>
       </trackContext.Provider>
     </I18nProviderClient>

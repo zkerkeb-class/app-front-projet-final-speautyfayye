@@ -16,7 +16,7 @@ export default {
       errors: {
         loading: 'Erreur lors du chargement des playlists :',
       },
-      imageAlt: 'Image de la playlist {{title}}',
+      imageAlt: 'Image de la playlist {title}',
     },
   },
   header: {

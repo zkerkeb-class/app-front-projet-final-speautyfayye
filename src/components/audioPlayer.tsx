@@ -7,6 +7,7 @@ import { ITrack } from '@/models/track';
 import Image from 'next/image';
 import {
   ListMusic,
+  Loader2,
   Maximize2,
   Mic2,
   Pause,
@@ -20,7 +21,6 @@ import {
   X,
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
-import Loader from '@/components/loader';
 import TracksList from './tracksList';
 
 const AudioPlayer: React.FC = () => {
@@ -194,7 +194,7 @@ const AudioPlayer: React.FC = () => {
           {/* Center section - Player controls */}
           {isLoading ? (
             <div className="flex h-full w-full items-center justify-center">
-              <Loader />
+              <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : (
             <>
