@@ -1,5 +1,6 @@
 'use client';
 
+import { I18nProviderClient } from '@/locales/client';
 import { ITrackExt } from '@/models/track';
 import { createContext, Dispatch, SetStateAction, useState } from 'react';
 
@@ -31,7 +32,13 @@ export const nextTracksContext = createContext<{
   shuffle: () => {},
 });
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({
+  children,
+  locale,
+}: {
+  children: React.ReactNode;
+  locale: string;
+}) {
   const [track, setTrack] = useState<ITrackExt | undefined>();
   const [nextTracks, setNextTracks] = useState<ITrackExt[] | undefined>(undefined);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -62,12 +69,14 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <trackContext.Provider value={{ track, setTrack }}>
-      <nextTracksContext.Provider value={{ nextTracks: nextTracks, setNextTracks, shuffle }}>
-        <playerContext.Provider value={{ isPlaying, pause, play }}>
-          {children}
-        </playerContext.Provider>
-      </nextTracksContext.Provider>
-    </trackContext.Provider>
+    <I18nProviderClient locale={locale}>
+      <trackContext.Provider value={{ track, setTrack }}>
+        <nextTracksContext.Provider value={{ nextTracks: nextTracks, setNextTracks, shuffle }}>
+          <playerContext.Provider value={{ isPlaying, pause, play }}>
+            {children}
+          </playerContext.Provider>
+        </nextTracksContext.Provider>
+      </trackContext.Provider>
+    </I18nProviderClient>
   );
 }

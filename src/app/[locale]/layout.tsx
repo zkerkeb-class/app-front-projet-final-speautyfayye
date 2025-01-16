@@ -5,16 +5,16 @@ import './globals.css';
 
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Header from '../../components/Header';
-import Player from '../../components/Player';
-import { Providers } from '@/components/Providers';
+import AudioPlayer from '../../components/audioPlayer';
+import Providers from '../providers';
 
 const geistSans = localFont({
-  src: './fonts/GeistVF.woff',
+  src: '../fonts/GeistVF.woff',
   variable: '--font-geist-sans',
   weight: '100 900',
 });
 const geistMono = localFont({
-  src: './fonts/GeistMonoVF.woff',
+  src: '../fonts/GeistMonoVF.woff',
   variable: '--font-geist-mono',
   weight: '100 900',
 });
@@ -55,7 +55,7 @@ export default async function RootLayout({
                   <main className="flex-grow overflow-y-auto bg-background/95 p-6 backdrop-blur-sm">
                     {children}
                   </main>
-                  <Player />
+                  <AudioPlayer />
                 </div>
               </div>
             </div>
