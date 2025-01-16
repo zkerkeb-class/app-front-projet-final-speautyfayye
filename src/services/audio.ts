@@ -3,6 +3,7 @@
 export const fetchAudio = async (trackId: number) => {
   const url = `http://localhost:3001/audio/${trackId}`;
 
+  console.log('🚀 ~ fetchAudio ~ url:', url);
   const response = await fetch(url, { method: 'GET' });
 
   if (response.ok) {

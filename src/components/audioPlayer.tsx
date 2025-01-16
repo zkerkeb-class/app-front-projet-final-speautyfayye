@@ -44,7 +44,6 @@ const AudioPlayer: React.FC = () => {
     setDuration(audio?.durationInSeconds ?? 0);
     setAudioSrc(audio?.objectUrl ?? null);
     setIsLoading(false);
-    player.play();
   };
 
   const handleProgressUpdate = () => {
@@ -75,20 +74,20 @@ const AudioPlayer: React.FC = () => {
   useEffect(() => {
     if (track.track) {
       setIsLoading(true);
-      player.pause();
       getAudio(track.track);
+      player.play();
     }
-  }, [track.track, player]);
+  }, [track.track]);
 
   useEffect(() => {
-    if (audioRef.current) {
+    if (audioRef.current && audioSrc) {
       if (player.isPlaying) {
         audioRef.current.play();
       } else {
         audioRef.current.pause();
       }
     }
-  }, [player.isPlaying]);
+  }, [player.isPlaying, audioRef.current, audioSrc]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -98,6 +97,31 @@ const AudioPlayer: React.FC = () => {
 
   return (
     <>
+      {audioSrc && (
+        <audio
+          ref={audioRef}
+          src={audioSrc}
+          onTimeUpdate={handleProgressUpdate}
+          onEnded={() => {
+            if (isRepeating) {
+              audioRef.current?.play();
+            } else {
+              if (track.track) {
+                const currentIndex = nextTracks.nextTracks
+                  ?.map((t) => t.id)
+                  ?.indexOf(track.track.id);
+
+                const next = nextTracks.nextTracks?.at(currentIndex! + 1);
+                if (next) {
+                  track.setTrack(next);
+                  return;
+                }
+              }
+              player.pause();
+            }
+          }}
+        />
+      )}
       {/* Lyrics */}
       {LyricsOpen && (
         <div className="fixed bottom-0 left-0 right-0 z-50 h-screen overflow-y-auto border-t border-neutral-800 bg-white pb-28 dark:border-neutral-800 dark:bg-black">
@@ -174,31 +198,6 @@ const AudioPlayer: React.FC = () => {
             </div>
           ) : (
             <>
-              {audioSrc && (
-                <audio
-                  ref={audioRef}
-                  src={audioSrc}
-                  onTimeUpdate={handleProgressUpdate}
-                  onEnded={() => {
-                    if (isRepeating) {
-                      audioRef.current?.play();
-                    } else {
-                      if (track.track) {
-                        const currentIndex = nextTracks.nextTracks
-                          ?.map((t) => t.id)
-                          ?.indexOf(track.track.id);
-
-                        const next = nextTracks.nextTracks?.at(currentIndex! + 1);
-                        if (next) {
-                          track.setTrack(next);
-                          return;
-                        }
-                      }
-                      player.pause();
-                    }
-                  }}
-                />
-              )}
               <div className="flex flex-col items-center gap-2">
                 <div className="flex items-center space-x-6">
                   <button
@@ -207,8 +206,6 @@ const AudioPlayer: React.FC = () => {
                     disabled={!nextTracks.nextTracks}
                     onClick={() => {
                       if (!nextTracks.nextTracks) return;
-
-                      console.log('isShuffling', isShuffling);
                       if (isShuffling) {
                         setIsShuffling(false);
                         return;
@@ -221,7 +218,7 @@ const AudioPlayer: React.FC = () => {
                   </button>
                   <button
                     className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
-                    title="Next"
+                    title="Previous"
                     disabled={!nextTracks.nextTracks}
                     onClick={() => {
                       if (!nextTracks.nextTracks || !track.track) return;
@@ -259,7 +256,12 @@ const AudioPlayer: React.FC = () => {
                     title="Next"
                     disabled={!nextTracks.nextTracks}
                     onClick={() => {
-                      if (!nextTracks.nextTracks || !track.track) return;
+                      if (!nextTracks.nextTracks || !track.track || !audioRef.current) return;
+
+                      if (isRepeating) {
+                        audioRef.current.currentTime = 0;
+                        return;
+                      }
 
                       const currentIndex = nextTracks.nextTracks
                         ?.map((t) => t.id)
@@ -274,7 +276,10 @@ const AudioPlayer: React.FC = () => {
                     <SkipForward className="h-5 w-5" />
                   </button>
 
-                  <button className="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white">
+                  <button
+                    title="Repeat"
+                    className="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                  >
                     {isRepeating ? (
                       <Repeat
                         className="h-4 w-4 text-green-600"
@@ -320,7 +325,7 @@ const AudioPlayer: React.FC = () => {
             </button>
             <button
               className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
-              title="next tracks"
+              title="Playlist"
               disabled={!nextTracks.nextTracks}
               onClick={() => {
                 if (!nextTracks.nextTracks) return;

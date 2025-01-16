@@ -47,6 +47,7 @@ const Page = () => {
     } else {
       audio.setTrack({ ...track, artist: album?.artist });
       nextTracks.setNextTracks(album?.tracks || []);
+      player.play();
     }
   };
 
@@ -61,6 +62,7 @@ const Page = () => {
       if (album?.tracks?.length) {
         audio.setTrack({ ...album.tracks[0], artist: album.artist });
         nextTracks.setNextTracks(album.tracks);
+        player.play();
       }
     }
   };
