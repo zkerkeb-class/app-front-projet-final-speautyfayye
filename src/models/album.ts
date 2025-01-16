@@ -1,3 +1,4 @@
+import { IArtist } from './artist';
 import { Track } from './track';
 
 export interface IAlbum {
@@ -10,6 +11,7 @@ export interface IAlbum {
 
 export interface IAlbumExt extends IAlbum {
   tracks: Track[] | null; // Liste des pistes associées à l'album (ou null si aucune)
+  artist: IArtist | null;
 }
 
 export class Album implements IAlbum {
@@ -28,11 +30,13 @@ export class Album implements IAlbum {
   }
 }
 
-export class AlbumExt extends Album implements AlbumExt {
+export class AlbumExt extends Album implements IAlbumExt {
   tracks: Track[] | null;
+  artist: IArtist | null;
 
   constructor(data: AlbumExt) {
     super(data);
-    this.tracks = data.tracks ?? null;
+    this.tracks = data.tracks;
+    this.artist = data.artist;
   }
 }
