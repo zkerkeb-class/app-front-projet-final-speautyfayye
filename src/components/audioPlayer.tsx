@@ -27,6 +27,7 @@ import WaveSurfer from 'wavesurfer.js';
 const AudioPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const waveFormRef = useRef<HTMLDivElement | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wavesurferRef = useRef<any>(); // Référence pour l'instance Wavesurfer
 
   const [duration, setDuration] = useState(0); // Durée totale en secondes
