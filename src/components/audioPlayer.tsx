@@ -54,13 +54,11 @@ const AudioPlayer: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log('🚀 ~ useEffect ~ audioSrc:', audioSrc);
-    console.log('🚀 ~ getAudio ~ waveFormRef.current:', waveFormRef.current);
     if (audioRef.current && audioSrc && waveFormRef.current) {
       wavesurferRef.current = WaveSurfer.create({
         container: '#waveform',
-        waveColor: 'violet',
-        progressColor: 'purple',
+        waveColor: '#22c55e',
+        progressColor: '#035220',
         height: 100,
         interact: false, // Désactive le clic sur le waveform
       });
@@ -218,7 +216,7 @@ const AudioPlayer: React.FC = () => {
               <div className="fixed right-8 top-8">
                 <X
                   className="h-6 w-6 cursor-pointer text-neutral-500 hover:text-neutral-900 dark:text-white dark:hover:text-white"
-                  onClick={() => setIsNextTracksOpen(false)}
+                  onClick={() => setIsFullScreen(false)}
                 />
               </div>
               <div className="flex gap-4">

@@ -1,7 +1,7 @@
 'use client';
 
 export const fetchAudio = async (trackId: number) => {
-  const url = `http://localhost:3001/audio/${trackId}`;
+  const url = `${process.env.NEXT_PUBLIC_BACKEND_API}/audio/${trackId}`;
 
   console.log('🚀 ~ fetchAudio ~ url:', url);
   const response = await fetch(url, { method: 'GET' });
