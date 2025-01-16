@@ -10,8 +10,8 @@ export const fetchAudio = async (trackId: number) => {
     const durationHeader = response.headers.get('duration');
     const durationInSeconds = durationHeader ? parseInt(durationHeader, 10) : 0;
 
-    const newBlob = await response.blob();
-    const objectUrl = URL.createObjectURL(newBlob);
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
 
     return { durationInSeconds, objectUrl };
   } else {

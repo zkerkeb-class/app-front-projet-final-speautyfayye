@@ -22,9 +22,13 @@ import {
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import TracksList from './tracksList';
+import WaveSurfer from 'wavesurfer.js';
 
 const AudioPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const waveFormRef = useRef<HTMLDivElement | null>(null);
+  const wavesurferRef = useRef<any>(); // Référence pour l'instance Wavesurfer
+
   const [duration, setDuration] = useState(0); // Durée totale en secondes
   const [currentTime, setCurrentTime] = useState(0); // Temps actuel en secondes
   const [audioSrc, setAudioSrc] = useState<string | null>(null);
@@ -47,6 +51,43 @@ const AudioPlayer: React.FC = () => {
     setAudioSrc(audio?.objectUrl ?? null);
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    console.log('🚀 ~ useEffect ~ audioSrc:', audioSrc);
+    console.log('🚀 ~ getAudio ~ waveFormRef.current:', waveFormRef.current);
+    if (audioRef.current && audioSrc && waveFormRef.current) {
+      wavesurferRef.current = WaveSurfer.create({
+        container: '#waveform',
+        waveColor: 'violet',
+        progressColor: 'purple',
+        height: 100,
+        interact: false, // Désactive le clic sur le waveform
+      });
+      wavesurferRef.current.load(audioSrc);
+      // Synchroniser les événements entre Wavesurfer et l'élément <audio>
+      wavesurferRef.current.on('seek', (progress: number) => {
+        if (audioRef.current) {
+          const duration = audioRef.current.duration;
+          audioRef.current.currentTime = progress * duration;
+        }
+      });
+
+      audioRef.current.addEventListener('timeupdate', () => {
+        const currentTime = audioRef.current!.currentTime; // Temps actuel de l'audio
+        const duration = audioRef.current!.duration; // Durée totale de l'audio
+
+        if (wavesurferRef.current && duration > 0) {
+          // Mettre à jour Wavesurfer pour refléter la position actuelle
+          wavesurferRef.current.seekTo(currentTime / duration);
+        }
+      });
+
+      return () => {
+        // Nettoyer les ressources lorsque le composant est démonté
+        wavesurferRef.current.destroy();
+      };
+    }
+  }, [audioSrc, isFullScreen]);
 
   const handleProgressUpdate = () => {
     if (audioRef.current) {
@@ -171,28 +212,34 @@ const AudioPlayer: React.FC = () => {
       {/* FullScreen */}
       {isFullScreen && (
         <div className="fixed bottom-0 left-0 right-0 z-50 h-screen overflow-y-auto border-t border-neutral-800 bg-white pb-28 dark:border-neutral-800 dark:bg-black">
-          <div className="relative flex min-h-full items-center justify-center p-4">
-            <div className="fixed right-8 top-8">
-              <X
-                className="h-6 w-6 cursor-pointer text-neutral-500 hover:text-neutral-900 dark:text-white dark:hover:text-white"
-                onClick={() => setIsNextTracksOpen(false)}
-              />
-            </div>
-            <div className="flex min-w-[60%] gap-4">
-              <div className="w-1/2">
-                <Image
-                  src="https://cdn.pixabay.com/photo/2016/09/10/11/11/musician-1658887_1280.jpg"
-                  alt="Album cover"
-                  className="rounded"
-                  width={400}
-                  height={400}
+          <div className="relative flex min-h-full flex-col items-center justify-center gap-8 p-4">
+            <div className="min-w-[60%]">
+              <div className="fixed right-8 top-8">
+                <X
+                  className="h-6 w-6 cursor-pointer text-neutral-500 hover:text-neutral-900 dark:text-white dark:hover:text-white"
+                  onClick={() => setIsNextTracksOpen(false)}
                 />
               </div>
-              <div>
-                <h2>{track.track?.title}</h2>
-                <h2>{track.track?.artist?.name}</h2>
-                <p>Catégorie: {track.track?.category?.name}</p>
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <Image
+                    src="https://cdn.pixabay.com/photo/2016/09/10/11/11/musician-1658887_1280.jpg"
+                    alt="Album cover"
+                    className="rounded"
+                    width={400}
+                    height={400}
+                  />
+                </div>
+                <div>
+                  <h2>{track.track?.title}</h2>
+                  <h2>{track.track?.artist?.name}</h2>
+                  <p>Catégorie: {track.track?.category?.name}</p>
+                  <p></p>
+                </div>
               </div>
+            </div>
+            <div className="flex w-1/2">
+              <div className="w-full" id="waveform" ref={waveFormRef}></div>
             </div>
           </div>
         </div>
