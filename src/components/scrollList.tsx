@@ -1,16 +1,30 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import PlayButton from './PlayButton';
 import StreamImage from './streamImage';
 
 interface IProps {
   name: string;
   imageId?: string;
+  href?: string;
+  id?: number;
 }
 
 export default function ScrollList(props: IProps) {
+  const router = useRouter();
+
+  const navigate = () => {
+    if (props.href) {
+      router.push(props.href + props.id);
+    }
+  };
+
   return (
-    <div className="group relative flex w-full cursor-pointer flex-col items-center justify-center gap-x-4 rounded-md bg-neutral-400/5 p-3 transition hover:bg-neutral-400/10">
+    <div
+      onClick={navigate}
+      className="group relative flex w-full cursor-pointer flex-col items-center justify-center gap-x-4 rounded-md bg-neutral-400/5 p-3 transition hover:bg-neutral-400/10"
+    >
       <div className="relative aspect-square h-32 w-32 overflow-hidden rounded-md">
         <StreamImage size={200} imageId={props.imageId} />
       </div>

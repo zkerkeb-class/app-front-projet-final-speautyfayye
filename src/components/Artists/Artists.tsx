@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { getArtists } from '@/services/artists';
 import { IArtist } from '@/models/artist';
+import { getArtists } from '@/services/artists';
+import { useEffect, useState } from 'react';
 import ScrollList from '../scrollList';
 
 const Artists = () => {
@@ -26,7 +26,13 @@ const Artists = () => {
       <h1 className="mb-4 text-2xl font-bold">Artistes Populaires</h1>
       <div className="flex space-x-4 overflow-x-scroll">
         {artists.map((artist, index) => (
-          <ScrollList key={index} name={artist.name} imageId={artist.picture} />
+          <ScrollList
+            href="/artist/"
+            id={artist.id}
+            key={index}
+            name={artist.name}
+            imageId={artist.picture}
+          />
         ))}
       </div>
     </div>
