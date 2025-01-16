@@ -1,10 +1,10 @@
+import { ThemeProvider } from '@/components/theme-provider';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
-import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 
-import Sidebar from '../../components/Sidebar/Sidebar';
 import Header from '../../components/Header';
+import Sidebar from '../../components/Sidebar/Sidebar';
 import AudioPlayer from '../../components/audioPlayer';
 import Providers from '../providers';
 
@@ -51,7 +51,7 @@ export default async function RootLayout({
               <Header />
               <div className="flex overflow-hidden">
                 <Sidebar />
-                <main className="overflow-y-auto bg-background/95 p-6 backdrop-blur-sm">
+                <main className="grow overflow-y-auto bg-background/95 backdrop-blur-sm">
                   {children}
                 </main>
                 <AudioPlayer />

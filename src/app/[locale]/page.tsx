@@ -4,7 +4,7 @@ import Playlists from '@/components/Playlists/Playlists';
 
 export default async function Home() {
   return (
-    <div className="mb-28 flex flex-col gap-5">
+    <div className="mb-28 flex flex-col gap-5 p-6">
       <Playlists />
       <Artists />
       <Album />

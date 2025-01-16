@@ -1,8 +1,8 @@
 'use client';
 
+import { Image as ImageIcon, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { Image as ImageIcon, Loader2 } from 'lucide-react';
 
 interface IProps {
   imageId?: string;
@@ -72,7 +72,7 @@ export default function StreamImage(props: IProps) {
           </div>
         )
       ) : (
-        <div className="flex flex-col items-center justify-center rounded border">
+        <div className="flex h-full flex-col items-center justify-center rounded border">
           <ImageIcon />
         </div>
       )}

@@ -2,12 +2,10 @@
 
 import { IAlbum } from '@/models/album';
 import { getAlbums } from '@/services/album';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ScrollList from '../scrollList';
 
 const Album = () => {
-  const router = useRouter();
   const [albums, setAlbums] = useState<IAlbum[]>([]);
 
   useEffect(() => {
