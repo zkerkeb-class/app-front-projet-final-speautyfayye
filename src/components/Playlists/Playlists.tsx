@@ -6,26 +6,28 @@ import Image from 'next/image';
 import { getPlaylists } from '@/services/playlists';
 import { defaultPlaylistImages } from '@/constants/data';
 import { IPlaylist } from '@/models/playlist';
+import { useScopedI18n } from '@/locales/client';
 
 const Playlists = () => {
   const [playlists, setPlaylists] = useState<IPlaylist[]>([]);
+  const translation = useScopedI18n('playlist.playlists');
 
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
         const fetchedPlaylists = await getPlaylists();
-        setPlaylists(fetchedPlaylists.slice(0, 9)); // Limiter à 9 playlists
+        setPlaylists(fetchedPlaylists.slice(0, 9));
       } catch (error) {
-        console.error('Erreur lors du chargement des playlists :', error);
+        console.error(translation('errors.loading'), error);
       }
     };
 
     fetchPlaylists();
-  }, []); // Dépendances vides pour exécuter une seule fois au montage
+  }, [translation]);
 
   return (
     <div className="">
-      <h1 className="mb-4 text-2xl font-bold">Playlists</h1>
+      <h1 className="mb-4 text-2xl font-bold">{translation('title')}</h1>
       <div className="flex w-max space-x-4">
         {playlists.map((playlist, index) => (
           <div
@@ -34,10 +36,8 @@ const Playlists = () => {
           >
             <div className="relative aspect-square h-32 w-32 overflow-hidden rounded-md">
               <Image
-                src={
-                  defaultPlaylistImages[index % defaultPlaylistImages.length] // Assigner une image par défaut
-                }
-                alt={playlist.title}
+                src={defaultPlaylistImages[index % defaultPlaylistImages.length]}
+                alt={translation('imageAlt', { title: playlist.title })}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 priority
