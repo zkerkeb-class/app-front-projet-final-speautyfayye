@@ -4,7 +4,6 @@ import React, { useRef, useState, useEffect, useContext } from 'react';
 import { fetchAudio } from '../services/audio';
 import { trackContext, playerContext, nextTracksContext } from '@/app/providers';
 import { ITrack } from '@/models/track';
-import Image from 'next/image';
 import {
   ListMusic,
   Loader2,
@@ -19,10 +18,12 @@ import {
   Volume2,
   VolumeX,
   X,
+  Image,
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import TracksList from './tracksList';
 import WaveSurfer from 'wavesurfer.js';
+import StreamImage from './streamImage';
 
 const AudioPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -209,7 +210,7 @@ const AudioPlayer: React.FC = () => {
         </div>
       )}
       {/* FullScreen */}
-      {isFullScreen && (
+      {isFullScreen && track.track && (
         <div className="fixed bottom-0 left-0 right-0 z-50 h-screen overflow-y-auto border-t border-neutral-800 bg-white pb-28 dark:border-neutral-800 dark:bg-black">
           <div className="relative flex min-h-full flex-col items-center justify-center gap-8 p-4">
             <div className="min-w-[60%]">
@@ -220,19 +221,13 @@ const AudioPlayer: React.FC = () => {
                 />
               </div>
               <div className="flex gap-4">
-                <div className="w-1/2">
-                  <Image
-                    src="https://cdn.pixabay.com/photo/2016/09/10/11/11/musician-1658887_1280.jpg"
-                    alt="Album cover"
-                    className="rounded"
-                    width={400}
-                    height={400}
-                  />
+                <div className="h-72 w-72 object-cover">
+                  <StreamImage imageId={track.track.picture} width={16} height={16} size={800} />
                 </div>
                 <div>
-                  <h2>{track.track?.title}</h2>
-                  <h2>{track.track?.artist?.name}</h2>
-                  <p>Catégorie: {track.track?.category?.name}</p>
+                  <h2 className="text-7xl">{track.track?.title}</h2>
+                  <h2 className="text-6xl">{track.track?.artist?.name}</h2>
+                  <p>Catégorie: {track.track?.category?.name ?? '?'}</p>
                   <p></p>
                 </div>
               </div>
@@ -250,13 +245,16 @@ const AudioPlayer: React.FC = () => {
           <div className="flex items-center space-x-4">
             {track.track && (
               <>
-                <Image
-                  src="https://cdn.pixabay.com/photo/2016/09/10/11/11/musician-1658887_1280.jpg"
-                  alt="Album cover"
-                  className="h-14 w-14 rounded"
-                  width={56}
-                  height={56}
-                />
+                {track.track.picture ? (
+                  <div className="flex h-14 w-14 items-center justify-center rounded border">
+                    <StreamImage imageId={track.track.picture} width={16} height={16} size={200} />
+                  </div>
+                ) : (
+                  <div className="flex h-14 w-14 items-center justify-center rounded border">
+                    <Image />
+                  </div>
+                )}
+
                 <div>
                   <div className="text-sm font-medium text-neutral-900 dark:text-white">
                     {track.track?.title ?? 'Titre inconnu'}

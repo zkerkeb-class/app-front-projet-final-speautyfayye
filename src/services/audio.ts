@@ -3,7 +3,6 @@
 export const fetchAudio = async (trackId: number) => {
   const url = `${process.env.NEXT_PUBLIC_BACKEND_API}/audio/${trackId}`;
 
-  console.log('🚀 ~ fetchAudio ~ url:', url);
   const response = await fetch(url, { method: 'GET' });
 
   if (response.ok) {

@@ -37,7 +37,7 @@ const Playlists = () => {
             <div className="relative aspect-square h-32 w-32 overflow-hidden rounded-md">
               <Image
                 src={defaultPlaylistImages[index % defaultPlaylistImages.length]}
-                alt={translation('imageAlt', { title: playlist.title })}
+                alt=""
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 priority
