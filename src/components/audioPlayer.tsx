@@ -24,6 +24,7 @@ import { Slider } from '@/components/ui/slider';
 import TracksList from './tracksList';
 import WaveSurfer from 'wavesurfer.js';
 import StreamImage from './streamImage';
+import { IArtist } from '@/models/artist';
 
 const AudioPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -130,7 +131,7 @@ const AudioPlayer: React.FC = () => {
         audioRef.current.pause();
       }
     }
-  }, [player.isPlaying, audioRef.current, audioSrc]);
+  }, [player.isPlaying, audioSrc]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -226,7 +227,9 @@ const AudioPlayer: React.FC = () => {
                 </div>
                 <div>
                   <h2 className="text-7xl">{track.track?.title}</h2>
-                  <h2 className="text-6xl">{track.track?.artist?.name}</h2>
+                  <h2 className="text-6xl">
+                    {(track.track?.artist as IArtist)?.name ?? 'Artiste inconnu'}
+                  </h2>
                   <p>Catégorie: {track.track?.category?.name ?? '?'}</p>
                   <p></p>
                 </div>
@@ -260,7 +263,7 @@ const AudioPlayer: React.FC = () => {
                     {track.track?.title ?? 'Titre inconnu'}
                   </div>
                   <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                    {track.track.artist?.name}
+                    {(track.track?.artist as IArtist)?.name ?? 'Artiste inconnu'}
                   </div>
                 </div>
               </>

@@ -1,11 +1,15 @@
-import { Playlist, IPlaylist } from '@/models/playlist';
+import { Playlist, IPlaylist, IPlaylistExt } from '@/models/playlist';
 
 interface PlaylistAPIResponse {
   data: IPlaylist[]; // Structure des données attendues depuis l'API
 }
 
+interface IPlaylistExtAPIResponse {
+  data: IPlaylistExt;
+}
+
 export async function getPlaylists(): Promise<Playlist[]> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/user/playlists/1`);
+  const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/playlist`);
 
   if (!response.ok) {
     throw new Error('Failed to fetch playlists');
@@ -16,4 +20,11 @@ export async function getPlaylists(): Promise<Playlist[]> {
 
   // Transformation des données en instances de la classe Playlist
   return playlistsData.data.map((item) => new Playlist(item));
+}
+
+// get playlist by id
+export async function getPlaylistById(id: number): Promise<IPlaylistExt> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/playlist/${id}`);
+  const playlistData: IPlaylistExtAPIResponse = await response.json(); // Modifié ici
+  return playlistData.data;
 }

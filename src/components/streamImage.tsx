@@ -50,7 +50,7 @@ export default function StreamImage(props: IProps) {
       };
     }
     setIsLoading(false);
-  }, [props.imageId, props.thumbnail]);
+  }, [props.imageId, props.thumbnail, props.size]);
 
   return (
     <>

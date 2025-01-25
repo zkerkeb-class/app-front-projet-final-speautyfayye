@@ -1,5 +1,6 @@
 import { playerContext, trackContext } from '@/app/providers';
 import { formatDuration } from '@/constants/data';
+import { IArtist } from '@/models/artist';
 import { ITrackExt } from '@/models/track';
 import { Pause, Play } from 'lucide-react';
 import { useContext } from 'react';
@@ -64,7 +65,7 @@ export default function TracksList(props: IProps) {
                       : 'text-neutral-900 group-hover:text-green-400 dark:text-white'
                   }`}
                 >
-                  {track.artist?.name}
+                  {(track.artist as IArtist)?.name ?? 'Artiste inconnu'}
                 </p>
               </div>
             </div>

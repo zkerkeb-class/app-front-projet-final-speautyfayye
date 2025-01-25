@@ -26,7 +26,7 @@ export const trackContext = createContext<{
 export const nextTracksContext = createContext<{
   nextTracks: ITrackExt[] | undefined;
   setNextTracks: Dispatch<SetStateAction<ITrackExt[] | undefined>>;
-  shuffle: (tracks: ITrackExt[] | undefined) => void;
+  shuffle: (tracks: ITrackExt[]) => void;
 }>({
   nextTracks: undefined,
   setNextTracks: () => {},
@@ -55,8 +55,8 @@ export default function Providers({
   }, []);
 
   const shuffle = useCallback(
-    (tracks: ITrackExt[] | undefined) => {
-      if (!tracks || !track) {
+    (tracks: ITrackExt[]) => {
+      if (!tracks.length || !track) {
         console.warn('Cannot shuffle: tracks or current track is undefined.');
         return;
       }

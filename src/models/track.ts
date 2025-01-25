@@ -18,7 +18,7 @@ export interface ITrack {
 export interface ITrackExt extends ITrack {
   category?: Category | null;
   album?: Album | null;
-  artist?: IArtist | null;
+  artist?: IArtist | null | string;
 }
 
 export class Track implements ITrack {
