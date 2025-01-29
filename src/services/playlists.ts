@@ -1,4 +1,4 @@
-import { Playlist, IPlaylist, IPlaylistExt } from '@/models/playlist';
+import { IPlaylist, IPlaylistExt, Playlist } from '@/models/playlist';
 
 interface PlaylistAPIResponse {
   data: IPlaylist[]; // Structure des données attendues depuis l'API

@@ -1,8 +1,9 @@
 'use client';
 
-import { IoLibrary } from 'react-icons/io5';
-import { HiOutlinePlus } from 'react-icons/hi';
 import { useScopedI18n } from '@/locales/client';
+import Link from 'next/link';
+import { HiOutlinePlus } from 'react-icons/hi';
+import { IoLibrary } from 'react-icons/io5';
 
 const Playlist = () => {
   const translation = useScopedI18n('playlist');
@@ -29,7 +30,7 @@ const Playlist = () => {
             </p>
           </div>
           <button className="h-8 w-fit rounded-full bg-neutral-900 px-4 text-sm font-semibold text-neutral-50 duration-100 ease-in-out hover:scale-105 dark:bg-neutral-50 dark:text-neutral-950">
-            {translation('createPlaylist')}
+            <Link href="/createPlaylist">{translation('createPlaylist')}</Link>
           </button>
         </div>
         <div className="w-full space-y-5 rounded-md bg-neutral-200 px-5 py-3 dark:bg-neutral-700/40">
