@@ -1,6 +1,6 @@
 import { playerContext, trackContext } from '@/app/providers';
 import { formatDuration } from '@/constants/data';
-import { IArtist } from '@/models/artist';
+import { IArtist } from '@/models/artist.model';
 import { ITrackExt } from '@/models/track';
 import { Pause, Play } from 'lucide-react';
 import { useContext } from 'react';
@@ -19,7 +19,7 @@ export default function TracksList(props: IProps) {
       {props.tracks.map((track) => (
         <div
           key={track.id}
-          onClick={() => props.onClick(track)}
+          onClick={() => props.onClick(track)} // `track` est utilisé ici
           className={`group relative flex cursor-pointer items-center rounded-md px-3 py-2.5 transition hover:bg-white/10 sm:px-4 sm:py-3 ${
             audio.track?.id === track.id ? 'bg-white/10' : ''
           }`}

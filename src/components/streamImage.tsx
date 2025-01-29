@@ -11,6 +11,7 @@ interface IProps {
   width?: number;
   height?: number;
   size: 200 | 400 | 800;
+  alt?: string;
 }
 
 export default function StreamImage(props: IProps) {
@@ -61,7 +62,7 @@ export default function StreamImage(props: IProps) {
           <Image
             className={`${props.customClasses ? props.customClasses : ''} h-full w-full`}
             src={imageSrc}
-            alt=""
+            alt={props.alt ?? 'Image'}
             width={props.width ? props.width : 300}
             height={props.height ? props.height : 300}
           />

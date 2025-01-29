@@ -55,6 +55,7 @@ export default function Providers({
   }, []);
 
   const shuffle = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (tracks: ITrackExt[]) => {
       if (!tracks.length || !track) {
         console.warn('Cannot shuffle: tracks or current track is undefined.');

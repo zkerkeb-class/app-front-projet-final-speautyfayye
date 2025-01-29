@@ -1,7 +1,7 @@
 'use client';
 
-import { IArtist } from '@/models/artist';
-import { getArtists } from '@/services/artists';
+import { IArtist } from '@/models/artist.model';
+import { getArtists } from '@/services/artist.service';
 import { useEffect, useState } from 'react';
 import ScrollList from '../scrollList';
 

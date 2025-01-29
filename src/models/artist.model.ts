@@ -1,3 +1,6 @@
+import { IAlbum } from './album';
+import { ITrack } from './track';
+
 export interface IArtist {
   id: number;
   name: string;
@@ -5,8 +8,11 @@ export interface IArtist {
   bio: string;
   picture?: string;
 }
+
 export interface IArtistExt extends IArtist {
   category: string;
+  tracks: ITrack[];
+  albums: IAlbum[];
 }
 
 export class Artist implements IArtist {
@@ -27,9 +33,13 @@ export class Artist implements IArtist {
 
 export class ArtistExt extends Artist implements IArtistExt {
   category: string;
+  tracks: ITrack[];
+  albums: IAlbum[];
 
   constructor(data: IArtistExt) {
     super(data);
     this.category = data.category;
+    this.tracks = data.tracks;
+    this.albums = data.albums;
   }
 }

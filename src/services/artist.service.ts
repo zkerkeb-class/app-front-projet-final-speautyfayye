@@ -1,7 +1,11 @@
-import { IArtist, Artist } from '@/models/artist';
+import { IArtist, IArtistExt, Artist } from '@/models/artist.model';
 
 interface ArtistAPIResponse {
   data: IArtist[];
+}
+
+interface ArtistExtAPIResponse {
+  data: IArtistExt;
 }
 
 export async function getArtists(): Promise<Artist[]> {
@@ -13,4 +17,10 @@ export async function getArtists(): Promise<Artist[]> {
 
   const ArtistsData: ArtistAPIResponse = await response.json();
   return ArtistsData.data.map((item) => new Artist(item));
+}
+
+export async function getArtistById(id: number): Promise<IArtistExt> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/artist/${id}`);
+  const artistData: ArtistExtAPIResponse = await response.json();
+  return artistData.data;
 }

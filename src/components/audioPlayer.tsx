@@ -24,7 +24,7 @@ import { Slider } from '@/components/ui/slider';
 import TracksList from './tracksList';
 import WaveSurfer from 'wavesurfer.js';
 import StreamImage from './streamImage';
-import { IArtist } from '@/models/artist';
+import { IArtist } from '@/models/artist.model';
 
 const AudioPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -250,7 +250,13 @@ const AudioPlayer: React.FC = () => {
               <>
                 {track.track.picture ? (
                   <div className="flex h-14 w-14 items-center justify-center rounded border">
-                    <StreamImage imageId={track.track.picture} width={16} height={16} size={200} />
+                    <StreamImage
+                      imageId={track.track.picture}
+                      width={16}
+                      height={16}
+                      size={200}
+                      alt={track.track.title}
+                    />
                   </div>
                 ) : (
                   <div className="flex h-14 w-14 items-center justify-center rounded border">

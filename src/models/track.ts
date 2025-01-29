@@ -1,5 +1,5 @@
 import { Album } from './album';
-import { IArtist } from './artist';
+import { IArtist } from './artist.model';
 import { Category } from './category';
 
 export interface ITrack {

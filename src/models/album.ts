@@ -1,4 +1,4 @@
-import { IArtist } from './artist';
+import { IArtist } from './artist.model';
 import { Track } from './track';
 
 export interface IAlbum {
