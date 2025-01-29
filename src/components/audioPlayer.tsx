@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useRef, useState, useEffect, useContext } from 'react';
-import { fetchAudio } from '../services/audio';
-import { trackContext, playerContext, nextTracksContext } from '@/app/providers';
+import { nextTracksContext, playerContext, trackContext } from '@/app/providers';
+import { Slider } from '@/components/ui/slider';
+import { IArtist } from '@/models/artist.model';
 import { ITrack } from '@/models/track';
 import {
+  Image,
   ListMusic,
   Loader2,
   Maximize2,
@@ -18,13 +19,12 @@ import {
   Volume2,
   VolumeX,
   X,
-  Image,
 } from 'lucide-react';
-import { Slider } from '@/components/ui/slider';
-import TracksList from './tracksList';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
+import { fetchAudio } from '../services/audio';
 import StreamImage from './streamImage';
-import { IArtist } from '@/models/artist.model';
+import TracksList from './tracksList';
 
 const AudioPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);

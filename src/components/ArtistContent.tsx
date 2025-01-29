@@ -1,12 +1,11 @@
 'use client';
-import React from 'react';
+import { nextTracksContext, playerContext, trackContext } from '@/app/providers';
+import TracksList from '@/components/tracksList';
 import { IArtistExt } from '@/models/artist.model';
 import { ITrack } from '@/models/track';
 import { Pause, Play } from 'lucide-react';
 import { useContext } from 'react';
 import StreamImage from './streamImage';
-import { nextTracksContext, playerContext, trackContext } from '@/app/providers';
-import TracksList from '@/components/tracksList';
 
 interface ArtistContentProps {
   artist: IArtistExt;
@@ -96,6 +95,7 @@ const ArtistContent = ({ artist }: ArtistContentProps) => {
                   return { ...t, artist: artist.name };
                 })}
                 onClick={handleTrackClick}
+                entityId={artist.id}
               />
             ) : (
               'No tracks found.'

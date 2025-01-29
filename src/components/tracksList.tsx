@@ -11,6 +11,7 @@ interface IProps {
   tracks: ITrackExt[];
   onClick: (track: ITrackExt) => void;
   deletable?: boolean;
+  entityId?: number;
 }
 
 export default function TracksList(props: IProps) {
@@ -55,7 +56,6 @@ export default function TracksList(props: IProps) {
         case 200:
         case 201:
           alert('Morceau ajouté à la playlist.');
-          window.location.reload();
           break;
         default:
           break;
@@ -65,13 +65,12 @@ export default function TracksList(props: IProps) {
     }
   };
 
-  const deleteFromPlaylist = async (playlistId: number) => {
+  const deleteFromPlaylist = async () => {
     if (!props.deletable) return;
-    console.log('🚀 ~ deleteFromPlaylist ~ optionsOpen:', optionsOpen);
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API}/playlist/${playlistId}/track`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/playlist/${props.entityId}/track`,
         {
           method: 'DELETE',
           headers: {
@@ -190,7 +189,7 @@ export default function TracksList(props: IProps) {
                           <Minus size={15} color="red" />
                           <p
                             className="whitespace-nowrap text-sm hover:text-red-500"
-                            onClick={() => deleteFromPlaylist(track.id)}
+                            onClick={() => deleteFromPlaylist()}
                           >
                             Supprimer de la playlist
                           </p>
