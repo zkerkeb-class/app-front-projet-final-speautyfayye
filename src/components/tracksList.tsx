@@ -4,12 +4,13 @@ import { IArtist } from '@/models/artist.model';
 import { IPlaylist } from '@/models/playlist';
 import { ITrackExt } from '@/models/track';
 import { getPlaylists } from '@/services/playlists';
-import { EllipsisVertical, Pause, Play, Plus } from 'lucide-react';
+import { EllipsisVertical, Minus, Pause, Play, Plus } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 
 interface IProps {
   tracks: ITrackExt[];
   onClick: (track: ITrackExt) => void;
+  deletable?: boolean;
 }
 
 export default function TracksList(props: IProps) {
@@ -37,13 +38,56 @@ export default function TracksList(props: IProps) {
 
   const addToPlaylist = async (playlistId: number) => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/playlist/${playlistId}/add`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/playlist/${playlistId}/track`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ trackId: addToPlaylistOpen }),
         },
-        body: JSON.stringify({ trackId: addToPlaylistOpen }),
-      });
+      );
+      switch (response.status) {
+        case 409:
+          alert('Ce morceau est déjà dans cette playlist.');
+          break;
+        case 200:
+        case 201:
+          alert('Morceau ajouté à la playlist.');
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteFromPlaylist = async (playlistId: number) => {
+    if (!props.deletable) return;
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API}/playlist/${playlistId}/track`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ trackId: addToPlaylistOpen }),
+        },
+      );
+      switch (response.status) {
+        case 404:
+          alert("Ce morceau n'est pas dans cette playlist.");
+          break;
+        case 200:
+          alert('Morceau supprimé de la playlist.');
+          break;
+        default:
+          break;
+      }
     } catch (error) {
       console.error(error);
     }
@@ -116,7 +160,7 @@ export default function TracksList(props: IProps) {
                 onClick={() => setOptionsOpen(track.id)}
               />
               {optionsOpen === track.id && (
-                <div className="absolute bottom-full right-full z-20 border bg-black p-3">
+                <div className="absolute bottom-full right-full z-20 space-y-2 border bg-black p-3">
                   {addToPlaylistOpen === track.id ? (
                     playlists.map((playlist, j) => (
                       <p
@@ -128,15 +172,28 @@ export default function TracksList(props: IProps) {
                       </p>
                     ))
                   ) : (
-                    <div className="flex cursor-pointer items-center gap-2">
-                      <Plus size={15} color="green" />
-                      <p
-                        className="whitespace-nowrap text-sm hover:text-green-500"
-                        onClick={() => setAddToPlaylistOpen(track.id)}
-                      >
-                        Ajouter à une playlist
-                      </p>
-                    </div>
+                    <>
+                      <div className="flex cursor-pointer items-center gap-2">
+                        <Plus size={15} color="green" />
+                        <p
+                          className="whitespace-nowrap text-sm hover:text-green-500"
+                          onClick={() => setAddToPlaylistOpen(track.id)}
+                        >
+                          Ajouter à une playlist
+                        </p>
+                      </div>
+                      {props.deletable && (
+                        <div className="flex cursor-pointer items-center gap-2">
+                          <Minus size={15} color="red" />
+                          <p
+                            className="whitespace-nowrap text-sm hover:text-red-500"
+                            onClick={() => deleteFromPlaylist(track.id)}
+                          >
+                            Supprimer de la playlist
+                          </p>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}

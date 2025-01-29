@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { getPlaylists } from '@/services/playlists';
-import { IPlaylist } from '@/models/playlist';
 import { useScopedI18n } from '@/locales/client';
+import { IPlaylist } from '@/models/playlist';
+import { getPlaylists } from '@/services/playlists';
+import { useEffect, useState } from 'react';
 import ScrollList from '../scrollList';
 
 const Playlists = () => {
@@ -14,7 +14,7 @@ const Playlists = () => {
     const fetchPlaylists = async () => {
       try {
         const fetchedPlaylists = await getPlaylists();
-        setPlaylists(fetchedPlaylists.slice(0, 9));
+        setPlaylists(fetchedPlaylists);
       } catch (error) {
         console.error(translation('errors.loading'), error);
       }

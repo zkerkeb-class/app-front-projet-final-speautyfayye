@@ -102,6 +102,7 @@ const PlaylistContent = ({ playlist }: PlaylistContentProps) => {
             <TracksList
               tracks={playlist.tracks.map((t) => ({ ...t, artist: playlist.title }))}
               onClick={handleTrackClick}
+              deletable
             />
           </div>
         </div>
