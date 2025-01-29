@@ -55,6 +55,7 @@ export default function TracksList(props: IProps) {
         case 200:
         case 201:
           alert('Morceau ajouté à la playlist.');
+          window.location.reload();
           break;
         default:
           break;
@@ -66,6 +67,7 @@ export default function TracksList(props: IProps) {
 
   const deleteFromPlaylist = async (playlistId: number) => {
     if (!props.deletable) return;
+    console.log('🚀 ~ deleteFromPlaylist ~ optionsOpen:', optionsOpen);
 
     try {
       const response = await fetch(
@@ -75,7 +77,7 @@ export default function TracksList(props: IProps) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ trackId: addToPlaylistOpen }),
+          body: JSON.stringify({ trackId: optionsOpen }),
         },
       );
       switch (response.status) {
@@ -84,6 +86,7 @@ export default function TracksList(props: IProps) {
           break;
         case 200:
           alert('Morceau supprimé de la playlist.');
+          window.location.reload();
           break;
         default:
           break;
