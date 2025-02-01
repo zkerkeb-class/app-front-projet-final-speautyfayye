@@ -1,7 +1,7 @@
 'use client';
 
 import { I18nProviderClient } from '@/locales/client';
-import { ITrackExt } from '@/models/track';
+import { ITrackExt } from '@/models/track.model';
 import { createContext, Dispatch, SetStateAction, useState, useCallback, useMemo } from 'react';
 
 // Contexts

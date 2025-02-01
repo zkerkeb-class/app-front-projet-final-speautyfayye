@@ -7,10 +7,21 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useScopedI18n } from '@/locales/client';
 import { LocaleSelect } from './LocaleSelect';
+import { useRouter } from 'next/navigation'; // Importez useRouter
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(''); // État pour stocker la recherche
   const translation = useScopedI18n('header');
+  const router = useRouter(); // Initialisez useRouter
+
+  // Fonction pour gérer la soumission du formulaire
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault(); // Empêcher le rechargement de la page
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`); // Rediriger vers la page de recherche
+    }
+  };
 
   return (
     <header className="flex items-center justify-between border-b border-border bg-background p-4">
@@ -24,24 +35,26 @@ const Header = () => {
       </div>
 
       <div className="mx-auto flex max-w-2xl flex-1 justify-center px-4">
-        <div className="relative flex w-full items-center">
+        <form onSubmit={handleSearch} className="relative flex w-full items-center">
           <Search className="absolute left-3 h-5 w-5 text-muted-foreground" />
           <input
             type="text"
             placeholder={translation('searchPlaceholder')}
             className="w-full rounded-full bg-secondary py-2 pl-10 pr-4 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            value={searchQuery} // Lier la valeur de l'input à l'état
+            onChange={(e) => setSearchQuery(e.target.value)} // Mettre à jour l'état
           />
-        </div>
+        </form>
       </div>
 
       <div className="flex items-center gap-2 md:gap-4">
         <LocaleSelect />
-        <Link
+        {/* <Link
           href="/login"
           className="rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background hover:bg-muted-foreground sm:px-8 sm:text-base"
         >
           {translation('login')}
-        </Link>
+        </Link> */}
         <ModeToggle />
       </div>
 

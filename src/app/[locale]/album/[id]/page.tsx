@@ -1,8 +1,8 @@
 // page.tsx
 import { Suspense } from 'react';
-import { getAlbumById } from '@/services/album';
+import { getAlbumById } from '@/services/album.service';
 import AlbumContent from '@/components/AlbumContent';
-import { IAlbumExt } from '@/models/album';
+import { IAlbumExt } from '@/models/album.model';
 import { Loader2 } from 'lucide-react';
 
 interface PageProps {

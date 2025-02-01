@@ -1,8 +1,8 @@
 'use client';
 import { nextTracksContext, playerContext, trackContext } from '@/app/providers';
 import TracksList from '@/components/tracksList';
-import { IPlaylistExt } from '@/models/playlist';
-import { ITrack } from '@/models/track';
+import { IPlaylistExt } from '@/models/playlist.model';
+import { ITrack } from '@/models/track.model';
 import { Pause, Play } from 'lucide-react';
 import { useContext } from 'react';
 import StreamImage from './streamImage';

@@ -1,7 +1,7 @@
 import React from 'react';
-import { getPlaylistById } from '@/services/playlists';
+import { getPlaylistById } from '@/services/playlist.service';
 import PlaylistContent from '@/components/PlaylistContent';
-import { IPlaylistExt } from '@/models/playlist';
+import { IPlaylistExt } from '@/models/playlist.model';
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 

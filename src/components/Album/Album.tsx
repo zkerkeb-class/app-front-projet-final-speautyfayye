@@ -1,7 +1,7 @@
 'use client';
 
-import { IAlbum } from '@/models/album';
-import { getAlbums } from '@/services/album';
+import { IAlbum } from '@/models/album.model';
+import { getAlbums } from '@/services/album.service';
 import { useEffect, useState } from 'react';
 import ScrollList from '../scrollList';
 

@@ -1,4 +1,4 @@
-import { Track } from './track';
+import { Track } from './track.model';
 
 export interface IPlaylist {
   id: number; // L'identifiant unique de la playlist

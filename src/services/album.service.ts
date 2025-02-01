@@ -1,4 +1,4 @@
-import { IAlbum, Album, IAlbumExt } from '@/models/album';
+import { IAlbum, Album, IAlbumExt } from '@/models/album.model';
 
 interface AlbumAPIResponse {
   data: IAlbum[];

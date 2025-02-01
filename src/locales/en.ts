@@ -29,4 +29,11 @@ export default {
       library: 'Library',
     },
   },
+  createPlaylist: {
+    title: 'Create New Playlist',
+    description: 'Give your playlist a name and start adding your favorite tracks',
+    loading: 'Creating...',
+    createPlaylist: 'Create Playlist',
+    placeholder: 'Enter playlist name...',
+  },
 } as const;

@@ -1,6 +1,6 @@
-import { Album } from './album';
-import { Playlist } from './playlist';
-import { Track } from './track';
+import { Album } from './album.model';
+import { Playlist } from './playlist.model';
+import { Track } from './track.model';
 
 export interface ICategory {
   id: number; // Identifiant unique de la catégorie

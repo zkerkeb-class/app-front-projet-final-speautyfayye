@@ -3,8 +3,8 @@
 // components/album-content.tsx
 import { nextTracksContext, playerContext, trackContext } from '@/app/providers';
 import TracksList from '@/components/tracksList';
-import { IAlbumExt } from '@/models/album';
-import { ITrackExt } from '@/models/track';
+import { IAlbumExt } from '@/models/album.model';
+import { ITrackExt } from '@/models/track.model';
 import { Pause, Play } from 'lucide-react';
 import { useContext } from 'react';
 import StreamImage from './streamImage';

@@ -1,7 +1,7 @@
 import { playerContext, trackContext } from '@/app/providers';
 import { formatDuration } from '@/constants/data';
 import { IArtist } from '@/models/artist.model';
-import { ITrackExt } from '@/models/track';
+import { ITrackExt } from '@/models/track.model';
 import { EllipsisVertical, Pause, Play } from 'lucide-react';
 import { useContext } from 'react';
 

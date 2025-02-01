@@ -1,5 +1,5 @@
-import { IAlbum } from './album';
-import { ITrack } from './track';
+import { IAlbum } from './album.model';
+import { ITrack } from './track.model';
 
 export interface IArtist {
   id: number;

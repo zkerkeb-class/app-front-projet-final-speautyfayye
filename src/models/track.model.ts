@@ -1,6 +1,6 @@
-import { Album } from './album';
+import { Album } from './album.model';
 import { IArtist } from './artist.model';
-import { Category } from './category';
+import { Category } from './category.model';
 
 export interface ITrack {
   id: number;

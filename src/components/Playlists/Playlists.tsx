@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { getPlaylists } from '@/services/playlists';
-import { IPlaylist } from '@/models/playlist';
+import { getPlaylists } from '@/services/playlist.service';
+import { IPlaylist } from '@/models/playlist.model';
 import { useScopedI18n } from '@/locales/client';
 import ScrollList from '../scrollList';
 

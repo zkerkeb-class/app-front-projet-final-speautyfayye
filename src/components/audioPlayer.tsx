@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useRef, useState, useEffect, useContext } from 'react';
-import { fetchAudio } from '../services/audio';
+import { fetchAudio } from '../services/audio.service';
 import { trackContext, playerContext, nextTracksContext } from '@/app/providers';
-import { ITrack } from '@/models/track';
+import { ITrack } from '@/models/track.model';
 import {
   ListMusic,
   Loader2,

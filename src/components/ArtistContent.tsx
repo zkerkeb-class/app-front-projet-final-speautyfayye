@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { IArtistExt } from '@/models/artist.model';
-import { ITrack } from '@/models/track';
+import { ITrack } from '@/models/track.model';
 import { Pause, Play } from 'lucide-react';
 import { useContext } from 'react';
 import StreamImage from './streamImage';
