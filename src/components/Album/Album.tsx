@@ -3,10 +3,12 @@
 import { IAlbum } from '@/models/album.model';
 import { getAlbums } from '@/services/album.service';
 import { useEffect, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import ScrollList from '../scrollList';
 
 const Album = () => {
   const [albums, setAlbums] = useState<IAlbum[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchAlbums = async () => {
@@ -15,11 +17,29 @@ const Album = () => {
         setAlbums(fetchedAlbums.slice(0, 9));
       } catch (error) {
         console.error('Erreur lors du chargement des albums :', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchAlbums();
   }, []);
+
+  if (isLoading) {
+    return (
+      <div>
+        <Skeleton className="mb-4 h-8 w-32" />
+        <div className="no-scrollbar grid auto-cols-[160px] grid-flow-col gap-4">
+          {[...Array(9)].map((_, index) => (
+            <div key={index}>
+              <Skeleton className="h-40 w-40 rounded-md" />
+              <Skeleton className="mt-2 h-4 w-32" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -40,3 +60,15 @@ const Album = () => {
 };
 
 export default Album;
+
+// Ajoutez ces styles dans votre fichier global.css
+/*
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+*/

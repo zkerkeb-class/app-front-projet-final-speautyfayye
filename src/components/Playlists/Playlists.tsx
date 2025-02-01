@@ -5,11 +5,12 @@ import { getPlaylists } from '@/services/playlist.service';
 import { IPlaylist } from '@/models/playlist.model';
 import { useScopedI18n } from '@/locales/client';
 import ScrollList from '../scrollList';
+import { Skeleton } from '../ui/skeleton';
 
 const Playlists = () => {
   const [playlists, setPlaylists] = useState<IPlaylist[]>([]);
   const translation = useScopedI18n('playlist.playlists');
-
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
@@ -17,11 +18,29 @@ const Playlists = () => {
         setPlaylists(fetchedPlaylists);
       } catch (error) {
         console.error(translation('errors.loading'), error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchPlaylists();
   }, [translation]);
+
+  if (isLoading) {
+    return (
+      <div>
+        <Skeleton className="mb-4 h-8 w-32" />
+        <div className="no-scrollbar grid auto-cols-[160px] grid-flow-col gap-4">
+          {[...Array(9)].map((_, index) => (
+            <div key={index}>
+              <Skeleton className="h-40 w-40 rounded-md" />
+              <Skeleton className="mt-2 h-4 w-32" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="">

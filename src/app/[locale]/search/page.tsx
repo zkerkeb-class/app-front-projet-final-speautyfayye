@@ -2,38 +2,44 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { getTracks } from '@/services/track.service'; // Service pour les pistes
-import { getAlbums } from '@/services/album.service'; // Service pour les albums
-import { getArtists } from '@/services/artist.service'; // Service pour les artistes
-import { getPlaylists } from '@/services/playlist.service'; // Service pour les playlists
-import { Track, TrackExt } from '@/models/track.model'; // Modèles pour les pistes
-import { Album, AlbumExt } from '@/models/album.model'; // Modèle pour les albums
-import { Artist, ArtistExt } from '@/models/artist.model'; // Modèle pour les artistes
-import { Playlist, PlaylistExt } from '@/models/playlist.model'; // Modèle pour les playlists
-import { ITrackFilters } from '@/models/filter.model'; // Interface pour les filtres
-import { Category, CategoryExt } from '@/models/category.model';
+import { getTracks } from '@/services/track.service';
+import { getAlbums } from '@/services/album.service';
+import { getArtists } from '@/services/artist.service';
+import { getPlaylists } from '@/services/playlist.service';
 import { getCategories } from '@/services/category.service';
+import { Track, TrackExt } from '@/models/track.model';
+import { Album, AlbumExt } from '@/models/album.model';
+import { Artist, ArtistExt } from '@/models/artist.model';
+import { Playlist, PlaylistExt } from '@/models/playlist.model';
+import { Category, CategoryExt } from '@/models/category.model';
+import { ITrackFilters } from '@/models/filter.model';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Music, Disc, Users, ListMusic, Tag } from 'lucide-react';
+
+type TabType = 'tracks' | 'albums' | 'artists' | 'playlists' | 'categories';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
-  const query = searchParams.get('q'); // Récupérer la requête de recherche
-  const [tracks, setTracks] = useState<(Track | TrackExt)[]>([]); // État pour les pistes
-  const [albums, setAlbums] = useState<(Album | AlbumExt)[]>([]); // État pour les albums
-  const [artists, setArtists] = useState<(Artist | ArtistExt)[]>([]); // État pour les artistes
-  const [playlists, setPlaylists] = useState<(Playlist | PlaylistExt)[]>([]); // État pour les playlists
-  const [categories, setCategories] = useState<(Category | CategoryExt)[]>([]); // État pour les catégories
-  const [isLoading, setIsLoading] = useState(true); // État pour gérer le chargement
-  const [error, setError] = useState<string | null>(null); // État pour gérer les erreurs
+  const query = searchParams.get('q');
+  const [tracks, setTracks] = useState<(Track | TrackExt)[]>([]);
+  const [albums, setAlbums] = useState<(Album | AlbumExt)[]>([]);
+  const [artists, setArtists] = useState<(Artist | ArtistExt)[]>([]);
+  const [playlists, setPlaylists] = useState<(Playlist | PlaylistExt)[]>([]);
+  const [categories, setCategories] = useState<(Category | CategoryExt)[]>([]);
+  const [activeTab, setActiveTab] = useState<TabType>('tracks');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fonction pour charger les résultats de recherche
   const loadSearchResults = async () => {
-    if (!query) return; // Ne rien faire si la requête est vide
+    if (!query) return;
 
     try {
       setIsLoading(true);
       setError(null);
 
-      // Définir les filtres de recherche pour les pistes
       const filters: ITrackFilters = {
         artistId: searchParams.has('artistId') ? Number(searchParams.get('artistId')) : undefined,
         albumId: searchParams.has('albumId') ? Number(searchParams.get('albumId')) : undefined,
@@ -58,17 +64,15 @@ export default function SearchPage() {
           : undefined,
       };
 
-      // Appeler les services pour récupérer les résultats
       const [tracksData, albumsData, artistsData, playlistsData, categoriesData] =
         await Promise.all([
-          getTracks(filters), // Récupérer les pistes
-          getAlbums(query || ''), // Récupérer les albums
-          getArtists(), // Récupérer les artistes
-          getPlaylists(), // Récupérer les playlists
-          getCategories(), // Récupérer les catégories
+          getTracks(filters),
+          getAlbums(query || ''),
+          getArtists(),
+          getPlaylists(),
+          getCategories(),
         ]);
 
-      // Filtrer les résultats en fonction de la requête (si nécessaire)
       const filteredTracks = tracksData.filter((track) =>
         track.title.toLowerCase().includes(query.toLowerCase()),
       );
@@ -85,7 +89,6 @@ export default function SearchPage() {
         category.name.toLowerCase().includes(query.toLowerCase()),
       );
 
-      // Convertir les résultats en instances de Track ou TrackExt
       const formattedTracks = filteredTracks.map((track) => {
         if ('artist' in track || 'album' in track || 'category' in track) {
           return new TrackExt(track as TrackExt);
@@ -94,139 +97,203 @@ export default function SearchPage() {
         }
       });
 
-      // Mettre à jour les états
       setTracks(formattedTracks);
       setAlbums(filteredAlbums);
       setArtists(filteredArtists);
       setPlaylists(filteredPlaylists);
       setCategories(filteredCategories);
+
+      // Set active tab based on which category has the most results
+      const resultCounts = {
+        tracks: formattedTracks.length,
+        albums: filteredAlbums.length,
+        artists: filteredArtists.length,
+        playlists: filteredPlaylists.length,
+        categories: filteredCategories.length,
+      };
+
+      const maxCategory = Object.entries(resultCounts).reduce((a, b) =>
+        b[1] > a[1] ? b : a,
+      )[0] as TabType;
+
+      setActiveTab(maxCategory);
     } catch (err) {
-      setError('Failed to fetch search results');
+      setError('Une erreur est survenue lors de la recherche');
       console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // format duration
   const formatDuration = (seconds: string) => {
     const minutes = Math.floor(Number(seconds) / 60);
     const secs = Math.floor(Number(seconds) % 60);
     return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  // Charger les résultats au montage du composant ou lorsque la requête change
   useEffect(() => {
     loadSearchResults();
   }, [query, searchParams]);
 
+  if (isLoading) {
+    return (
+      <div className="p-8">
+        <div className="space-y-4">
+          <Skeleton className="h-12 w-64" />
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-48" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="mx-auto my-8 max-w-lg">
+        <CardHeader>
+          <CardTitle className="text-red-500">Erreur</CardTitle>
+          <CardDescription>{error}</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
-    <div className="p-4">
-      <h1 className="mb-4 text-2xl font-bold">Résultats de recherche pour : {query}</h1>
+    <div className="container mx-auto p-6">
+      <h1 className="mb-8 text-3xl font-bold">
+        Résultats pour &quot;{query}&quot;
+        <Badge variant="secondary" className="ml-4">
+          {tracks.length + albums.length + artists.length + playlists.length + categories.length}{' '}
+          résultats
+        </Badge>
+      </h1>
 
-      {isLoading && <p>Chargement en cours...</p>}
+      <Tabs value={activeTab} defaultValue={activeTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="tracks" className="space-x-2">
+            <Music className="h-4 w-4" />
+            <span>Pistes ({tracks.length})</span>
+          </TabsTrigger>
+          <TabsTrigger value="albums" className="space-x-2">
+            <Disc className="h-4 w-4" />
+            <span>Albums ({albums.length})</span>
+          </TabsTrigger>
+          <TabsTrigger value="artists" className="space-x-2">
+            <Users className="h-4 w-4" />
+            <span>Artistes ({artists.length})</span>
+          </TabsTrigger>
+          <TabsTrigger value="playlists" className="space-x-2">
+            <ListMusic className="h-4 w-4" />
+            <span>Playlists ({playlists.length})</span>
+          </TabsTrigger>
+          <TabsTrigger value="categories" className="space-x-2">
+            <Tag className="h-4 w-4" />
+            <span>Catégories ({categories.length})</span>
+          </TabsTrigger>
+        </TabsList>
 
-      {error && <p className="text-red-500">{error}</p>}
-
-      {!isLoading && !error && (
-        <>
-          {/* Afficher les pistes */}
-          {tracks.length > 0 && (
-            <section className="mb-8">
-              <h2 className="mb-4 text-xl font-semibold">Pistes</h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {tracks.map((track) => (
-                  <div key={track.id} className="rounded-lg border p-4">
-                    <h2 className="text-lg font-semibold">{track.title}</h2>
-                    {/* {'artist' in track && (
-                      <p className="text-sm text-gray-500">
-                        Artiste :{' '}
-                        {typeof track.artist === 'string'
-                          ? track.artist
-                          : track.artist?.name || 'Inconnu'}
-                      </p>
-                    )} */}
-                    <p className="text-sm text-gray-500">
+        <TabsContent value="tracks" className="mt-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {tracks.map((track) => (
+              <Card key={track.id} className="transition-colors hover:bg-accent/50">
+                <CardHeader>
+                  <CardTitle className="line-clamp-1">{track.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
                       Durée : {formatDuration(track.duration)}
                     </p>
-                    {'album' in track && track.album && (
-                      <p className="text-sm text-gray-500">Album : {track.album.title}</p>
-                    )}
-                    {'category' in track && track.category && (
-                      <p className="text-sm text-gray-500">Catégorie : {track.category.name}</p>
-                    )}
+                    <div className="flex flex-wrap gap-2">
+                      {'album' in track && track.album && (
+                        <Badge variant="outline">{track.album.title}</Badge>
+                      )}
+                      {'category' in track && track.category && (
+                        <Badge variant="secondary">{track.category.name}</Badge>
+                      )}
+                    </div>
                   </div>
-                ))}
-              </div>
-            </section>
-          )}
-          {/* Afficher les catégories */}
-          {categories.length > 0 && (
-            <section className="mb-8">
-              <h2 className="mb-4 text-xl font-semibold">Catégories</h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {categories.map((category) => (
-                  <div key={category.id} className="rounded-lg border p-4">
-                    <h3 className="text-lg font-semibold">{category.name}</h3>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
 
-          {/* Afficher les albums */}
-          {albums.length > 0 && (
-            <section className="mb-8">
-              <h2 className="mb-4 text-xl font-semibold">Albums</h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {albums.map((album) => (
-                  <div key={album.id} className="rounded-lg border p-4">
-                    <h3 className="text-lg font-semibold">{album.title}</h3>
-                    <p className="text-sm text-gray-500">
-                      Date de sortie : {new Date(album.releaseDate).toLocaleDateString()}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+        <TabsContent value="albums" className="mt-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {albums.map((album) => (
+              <Card key={album.id} className="transition-colors hover:bg-accent/50">
+                <CardHeader>
+                  <CardTitle className="line-clamp-1">{album.title}</CardTitle>
+                  <CardDescription>
+                    Sortie le{' '}
+                    {new Date(album.releaseDate).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
 
-          {/* Afficher les artistes */}
-          {artists.length > 0 && (
-            <section className="mb-8">
-              <h2 className="mb-4 text-xl font-semibold">Artistes</h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {artists.map((artist) => (
-                  <div key={artist.id} className="rounded-lg border p-4">
-                    <h3 className="text-lg font-semibold">{artist.name}</h3>
-                    <p className="text-sm text-gray-500">{artist.bio}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+        <TabsContent value="artists" className="mt-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {artists.map((artist) => (
+              <Card key={artist.id} className="transition-colors hover:bg-accent/50">
+                <CardHeader>
+                  <CardTitle className="line-clamp-1">{artist.name}</CardTitle>
+                  <CardDescription className="line-clamp-2">{artist.bio}</CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
 
-          {/* Afficher les playlists */}
-          {playlists.length > 0 && (
-            <section className="mb-8">
-              <h2 className="mb-4 text-xl font-semibold">Playlists</h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {playlists.map((playlist) => (
-                  <div key={playlist.id} className="rounded-lg border p-4">
-                    <h3 className="text-lg font-semibold">{playlist.title}</h3>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+        <TabsContent value="playlists" className="mt-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {playlists.map((playlist) => (
+              <Card key={playlist.id} className="transition-colors hover:bg-accent/50">
+                <CardHeader>
+                  <CardTitle className="line-clamp-1">{playlist.title}</CardTitle>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
 
-          {/* Aucun résultat trouvé */}
-          {tracks.length === 0 &&
-            albums.length === 0 &&
-            artists.length === 0 &&
-            playlists.length === 0 && <p>Aucun résultat trouvé.</p>}
-        </>
-      )}
+        <TabsContent value="categories" className="mt-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {categories.map((category) => (
+              <Card key={category.id} className="transition-colors hover:bg-accent/50">
+                <CardHeader>
+                  <CardTitle className="line-clamp-1">{category.name}</CardTitle>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {tracks.length === 0 &&
+        albums.length === 0 &&
+        artists.length === 0 &&
+        playlists.length === 0 &&
+        categories.length === 0 && (
+          <Card className="mx-auto mt-8 max-w-lg">
+            <CardHeader className="text-center">
+              <CardTitle>Aucun résultat</CardTitle>
+              <CardDescription>
+                Aucun résultat trouvé pour votre recherche &quot;{query}&quot;
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        )}
     </div>
   );
 }

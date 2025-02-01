@@ -3,23 +3,43 @@
 import { IArtist } from '@/models/artist.model';
 import { getArtists } from '@/services/artist.service';
 import { useEffect, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import ScrollList from '../scrollList';
 
 const Artists = () => {
   const [artists, setArtists] = useState<IArtist[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchArtists = async () => {
       try {
         const fetchedArtists = await getArtists();
-        setArtists(fetchedArtists.slice(0, 9)); // Limiter à 9 artistes
+        setArtists(fetchedArtists.slice(0, 9));
       } catch (error) {
         console.error('Erreur lors du chargement des artistes :', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchArtists();
   }, []);
+
+  if (isLoading) {
+    return (
+      <div>
+        <Skeleton className="mb-4 h-8 w-32" />
+        <div className="no-scrollbar grid auto-cols-[160px] grid-flow-col gap-4">
+          {[...Array(9)].map((_, index) => (
+            <div key={index}>
+              <Skeleton className="h-40 w-40 rounded-md" />
+              <Skeleton className="mt-2 h-4 w-32" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
