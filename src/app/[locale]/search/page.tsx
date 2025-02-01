@@ -11,6 +11,8 @@ import { Album, AlbumExt } from '@/models/album.model'; // Modèle pour les albu
 import { Artist, ArtistExt } from '@/models/artist.model'; // Modèle pour les artistes
 import { Playlist, PlaylistExt } from '@/models/playlist.model'; // Modèle pour les playlists
 import { ITrackFilters } from '@/models/filter.model'; // Interface pour les filtres
+import { Category, CategoryExt } from '@/models/category.model';
+import { getCategories } from '@/services/category.service';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -19,6 +21,7 @@ export default function SearchPage() {
   const [albums, setAlbums] = useState<(Album | AlbumExt)[]>([]); // État pour les albums
   const [artists, setArtists] = useState<(Artist | ArtistExt)[]>([]); // État pour les artistes
   const [playlists, setPlaylists] = useState<(Playlist | PlaylistExt)[]>([]); // État pour les playlists
+  const [categories, setCategories] = useState<(Category | CategoryExt)[]>([]); // État pour les catégories
   const [isLoading, setIsLoading] = useState(true); // État pour gérer le chargement
   const [error, setError] = useState<string | null>(null); // État pour gérer les erreurs
 
@@ -56,12 +59,14 @@ export default function SearchPage() {
       };
 
       // Appeler les services pour récupérer les résultats
-      const [tracksData, albumsData, artistsData, playlistsData] = await Promise.all([
-        getTracks(filters), // Récupérer les pistes
-        getAlbums(query || ''), // Récupérer les albums
-        getArtists(), // Récupérer les artistes
-        getPlaylists(), // Récupérer les playlists
-      ]);
+      const [tracksData, albumsData, artistsData, playlistsData, categoriesData] =
+        await Promise.all([
+          getTracks(filters), // Récupérer les pistes
+          getAlbums(query || ''), // Récupérer les albums
+          getArtists(), // Récupérer les artistes
+          getPlaylists(), // Récupérer les playlists
+          getCategories(), // Récupérer les catégories
+        ]);
 
       // Filtrer les résultats en fonction de la requête (si nécessaire)
       const filteredTracks = tracksData.filter((track) =>
@@ -75,6 +80,9 @@ export default function SearchPage() {
       );
       const filteredPlaylists = playlistsData.filter((playlist) =>
         playlist.title.toLowerCase().includes(query.toLowerCase()),
+      );
+      const filteredCategories = categoriesData.filter((category) =>
+        category.name.toLowerCase().includes(query.toLowerCase()),
       );
 
       // Convertir les résultats en instances de Track ou TrackExt
@@ -91,12 +99,20 @@ export default function SearchPage() {
       setAlbums(filteredAlbums);
       setArtists(filteredArtists);
       setPlaylists(filteredPlaylists);
+      setCategories(filteredCategories);
     } catch (err) {
       setError('Failed to fetch search results');
       console.error(err);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // format duration
+  const formatDuration = (seconds: string) => {
+    const minutes = Math.floor(Number(seconds) / 60);
+    const secs = Math.floor(Number(seconds) % 60);
+    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
   // Charger les résultats au montage du composant ou lorsque la requête change
@@ -130,13 +146,28 @@ export default function SearchPage() {
                           : track.artist?.name || 'Inconnu'}
                       </p>
                     )} */}
-                    <p className="text-sm text-gray-500">Durée : {track.duration} sec</p>
+                    <p className="text-sm text-gray-500">
+                      Durée : {formatDuration(track.duration)}
+                    </p>
                     {'album' in track && track.album && (
                       <p className="text-sm text-gray-500">Album : {track.album.title}</p>
                     )}
                     {'category' in track && track.category && (
                       <p className="text-sm text-gray-500">Catégorie : {track.category.name}</p>
                     )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+          {/* Afficher les catégories */}
+          {categories.length > 0 && (
+            <section className="mb-8">
+              <h2 className="mb-4 text-xl font-semibold">Catégories</h2>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {categories.map((category) => (
+                  <div key={category.id} className="rounded-lg border p-4">
+                    <h3 className="text-lg font-semibold">{category.name}</h3>
                   </div>
                 ))}
               </div>

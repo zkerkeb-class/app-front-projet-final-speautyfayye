@@ -21,6 +21,7 @@ const Header = () => {
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery)}`); // Rediriger vers la page de recherche
     }
+    setSearchQuery('');
   };
 
   return (
