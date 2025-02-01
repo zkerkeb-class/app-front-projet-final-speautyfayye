@@ -4,7 +4,11 @@ import React, { useRef, useState, useEffect, useContext } from 'react';
 import { fetchAudio } from '../services/audio.service';
 import { trackContext, playerContext, nextTracksContext } from '@/app/providers';
 import { ITrack } from '@/models/track.model';
+import { Slider } from '@/components/ui/slider';
+import { IArtist } from '@/models/artist.model';
+
 import {
+  Image,
   ListMusic,
   Loader2,
   Maximize2,
@@ -18,13 +22,10 @@ import {
   Volume2,
   VolumeX,
   X,
-  Image,
 } from 'lucide-react';
-import { Slider } from '@/components/ui/slider';
-import TracksList from './tracksList';
 import WaveSurfer from 'wavesurfer.js';
 import StreamImage from './streamImage';
-import { IArtist } from '@/models/artist.model';
+import TracksList from './tracksList';
 
 const AudioPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);

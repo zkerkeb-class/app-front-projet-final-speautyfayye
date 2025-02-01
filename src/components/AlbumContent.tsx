@@ -105,6 +105,7 @@ const AlbumContent = ({ album }: AlbumContentProps) => {
                   return { ...t, artist: album.artist };
                 })}
                 onClick={handleTrackClick}
+                entityId={album.id}
               />
             ) : (
               'No tracks found.'

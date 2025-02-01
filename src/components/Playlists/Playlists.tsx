@@ -14,7 +14,7 @@ const Playlists = () => {
     const fetchPlaylists = async () => {
       try {
         const fetchedPlaylists = await getPlaylists();
-        setPlaylists(fetchedPlaylists.slice(0, 9));
+        setPlaylists(fetchedPlaylists);
       } catch (error) {
         console.error(translation('errors.loading'), error);
       }
