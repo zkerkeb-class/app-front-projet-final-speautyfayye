@@ -11,7 +11,6 @@ import { Album, AlbumExt } from '@/models/album.model'; // Modèle pour les albu
 import { Artist, ArtistExt } from '@/models/artist.model'; // Modèle pour les artistes
 import { Playlist, PlaylistExt } from '@/models/playlist.model'; // Modèle pour les playlists
 import { ITrackFilters } from '@/models/filter.model'; // Interface pour les filtres
-import { Category } from '@/models/category.model';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
