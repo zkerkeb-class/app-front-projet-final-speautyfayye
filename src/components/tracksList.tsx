@@ -139,17 +139,19 @@ export default function TracksList(props: IProps) {
                       {track.title}
                     </p>
                   </div>
-                  <div>
-                    <p
-                      className={`truncate text-sm sm:text-base ${
-                        audio.track?.id === track.id
-                          ? 'text-green-500'
-                          : 'text-neutral-900 group-hover:text-green-400 dark:text-white'
-                      }`}
-                    >
-                      {(track.artist as IArtist)?.name ?? 'Artiste inconnu'}
-                    </p>
-                  </div>
+                  {track.artist && (
+                    <div>
+                      <p
+                        className={`truncate text-sm sm:text-base ${
+                          audio.track?.id === track.id
+                            ? 'text-green-500'
+                            : 'text-neutral-900 group-hover:text-green-400 dark:text-white'
+                        }`}
+                      >
+                        {(track.artist as IArtist)?.name ?? 'Artiste inconnu'}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div className="text-xs text-neutral-500 group-hover:text-white sm:text-sm">
                   {formatDuration(Number(track.duration))}

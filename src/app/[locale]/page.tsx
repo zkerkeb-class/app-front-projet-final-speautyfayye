@@ -1,5 +1,6 @@
 import Album from '@/components/Album/Album';
 import Artists from '@/components/Artists/Artists';
+import Category from '@/components/Categories/Category';
 import Playlists from '@/components/Playlists/Playlists';
 
 export default async function Home() {
@@ -8,6 +9,7 @@ export default async function Home() {
       <Playlists />
       <Artists />
       <Album />
+      <Category />
     </div>
   );
 }
