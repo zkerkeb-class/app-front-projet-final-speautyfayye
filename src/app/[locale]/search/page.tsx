@@ -19,6 +19,7 @@ import { Disc, ListMusic, Music, Tag, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useScopedI18n } from '@/locales/client';
 
 // type TabType = 'tracks' | 'albums' | 'artists' | 'playlists' | 'categories';
 type sort = 'duration' | 'releaseDate' | 'alphabetic' | 'popularity' | undefined;
@@ -31,10 +32,9 @@ export default function SearchPage() {
   const [artists, setArtists] = useState<(Artist | ArtistExt)[]>([]);
   const [playlists, setPlaylists] = useState<(Playlist | PlaylistExt)[]>([]);
   const [categories, setCategories] = useState<(Category | CategoryExt)[]>([]);
-  // const [activeTab, setActiveTab] = useState<TabType>('tracks');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const translation = useScopedI18n('searchPage');
   const [sort, setSort] = useState<sort>(undefined);
 
   const loadSearchResults = async () => {
@@ -106,21 +106,6 @@ export default function SearchPage() {
       setArtists(filteredArtists);
       setPlaylists(filteredPlaylists);
       setCategories(filteredCategories);
-
-      // Set active tab based on which category has the most results
-      // const resultCounts = {
-      //   tracks: formattedTracks.length,
-      //   albums: filteredAlbums.length,
-      //   artists: filteredArtists.length,
-      //   playlists: filteredPlaylists.length,
-      //   categories: filteredCategories.length,
-      // };
-
-      // const maxCategory = Object.entries(resultCounts).reduce((a, b) =>
-      //   b[1] > a[1] ? b : a,
-      // )[0] as TabType;
-
-      // setActiveTab(maxCategory);
     } catch (err) {
       setError('Une erreur est survenue lors de la recherche');
       console.error(err);
@@ -133,6 +118,14 @@ export default function SearchPage() {
     const minutes = Math.floor(Number(seconds) / 60);
     const secs = Math.floor(Number(seconds) % 60);
     return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
   };
 
   useEffect(() => {
@@ -179,23 +172,33 @@ export default function SearchPage() {
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="tracks" className="space-x-2">
             <Music className="h-4 w-4" />
-            <span>Pistes ({tracks.length})</span>
+            <span>
+              {translation('tracks')} ({tracks.length})
+            </span>
           </TabsTrigger>
           <TabsTrigger value="albums" className="space-x-2">
             <Disc className="h-4 w-4" />
-            <span>Albums ({albums.length})</span>
+            <span>
+              {translation('albums')} ({albums.length})
+            </span>
           </TabsTrigger>
           <TabsTrigger value="artists" className="space-x-2">
             <Users className="h-4 w-4" />
-            <span>Artistes ({artists.length})</span>
+            <span>
+              {translation('artists')} ({artists.length})
+            </span>
           </TabsTrigger>
           <TabsTrigger value="playlists" className="space-x-2">
             <ListMusic className="h-4 w-4" />
-            <span>Playlists ({playlists.length})</span>
+            <span>
+              {translation('playlists')} ({playlists.length})
+            </span>
           </TabsTrigger>
           <TabsTrigger value="categories" className="space-x-2">
             <Tag className="h-4 w-4" />
-            <span>Catégories ({categories.length})</span>
+            <span>
+              {translation('categories')} ({categories.length})
+            </span>
           </TabsTrigger>
         </TabsList>
 
@@ -209,7 +212,7 @@ export default function SearchPage() {
                   sort === 'duration' ? 'bg-primary' : 'bg-accent text-white'
                 }`}
               >
-                Durée
+                {translation('durationText')}
               </button>
               <button
                 onClick={() => setSort('releaseDate')}
@@ -217,7 +220,7 @@ export default function SearchPage() {
                   sort === 'releaseDate' ? 'bg-primary' : 'bg-accent text-white'
                 }`}
               >
-                Date de sortie
+                {translation('releaseDateText')}
               </button>
               <button
                 onClick={() => setSort('alphabetic')}
@@ -225,7 +228,7 @@ export default function SearchPage() {
                   sort === 'alphabetic' ? 'bg-primary' : 'bg-accent text-white'
                 }`}
               >
-                Alphabétique
+                {translation('alphabeticText')}
               </button>
               <button
                 onClick={() => setSort('popularity')}
@@ -233,7 +236,7 @@ export default function SearchPage() {
                   sort === 'popularity' ? 'bg-primary' : 'bg-accent text-white'
                 }`}
               >
-                Nombre d&apos;écoutes
+                {translation('popularityText')}
               </button>
             </p>
           </div>
@@ -263,7 +266,7 @@ export default function SearchPage() {
                     <CardContent>
                       <div className="space-y-2">
                         <p className="text-sm text-muted-foreground">
-                          Durée : {formatDuration(track.duration)}
+                          {translation('duration')} : {formatDuration(track.duration)}
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {'album' in track && track.album && (
@@ -289,11 +292,8 @@ export default function SearchPage() {
                   <CardHeader>
                     <CardTitle className="line-clamp-1">{album.title}</CardTitle>
                     <CardDescription>
-                      Sortie le{' '}
-                      {new Date(album.releaseDate).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
+                      {translation('releaseDate', {
+                        releaseDate: formatDate(new Date(album.releaseDate)),
                       })}
                     </CardDescription>
                   </CardHeader>
