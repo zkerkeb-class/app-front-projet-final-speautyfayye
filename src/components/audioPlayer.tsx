@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useRef, useState, useEffect, useContext } from 'react';
-import { fetchAudio } from '../services/audio.service';
-import { trackContext, playerContext, nextTracksContext } from '@/app/providers';
-import { ITrack } from '@/models/track.model';
+import { nextTracksContext, playerContext, trackContext } from '@/app/providers';
 import { Slider } from '@/components/ui/slider';
 import { IArtist } from '@/models/artist.model';
+import { ITrack } from '@/models/track.model';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { fetchAudio } from '../services/audio.service';
 
 import {
   Image,
@@ -224,7 +224,7 @@ const AudioPlayer: React.FC = () => {
               </div>
               <div className="flex gap-4">
                 <div className="h-72 w-72 object-cover">
-                  <StreamImage imageId={track.track.picture} width={16} height={16} size={800} />
+                  <StreamImage imageId={track.track.picture} size={800} />
                 </div>
                 <div>
                   <h2 className="text-7xl">{track.track?.title}</h2>

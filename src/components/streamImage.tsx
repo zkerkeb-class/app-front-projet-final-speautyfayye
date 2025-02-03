@@ -62,7 +62,7 @@ export default function StreamImage(props: IProps) {
         imageSrc ? (
           <Image
             className={`${props.customClasses ? props.customClasses : ''} ${
-              props.height
+              props.height ? props.height : '!h-full'
             } w-full object-cover`}
             src={imageSrc}
             alt={props.alt ?? 'Image'}
