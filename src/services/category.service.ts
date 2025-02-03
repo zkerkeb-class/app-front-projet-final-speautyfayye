@@ -1,4 +1,4 @@
-import { ICategory, ICategoryExt, Category } from '@/models/category.model';
+import { CategoryExt, ICategory, ICategoryExt } from '@/models/category.model';
 
 interface ICategoryAPIResponse {
   data: ICategory[];
@@ -8,7 +8,7 @@ interface ICategoryExtAPIResponse {
   data: ICategoryExt;
 }
 
-export async function getCategories(): Promise<Category[]> {
+export async function getCategories(): Promise<CategoryExt[]> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/category`);
 
   if (!response.ok) {
@@ -16,7 +16,7 @@ export async function getCategories(): Promise<Category[]> {
   }
 
   const categoriesData: ICategoryAPIResponse = await response.json();
-  return categoriesData.data.map((item) => new Category(item));
+  return categoriesData.data.map((item) => new CategoryExt(item));
 }
 
 export async function getCategoryById(id: number): Promise<ICategoryExt> {

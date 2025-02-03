@@ -2,20 +2,20 @@
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { useScopedI18n } from '@/locales/client';
-import { IAlbum } from '@/models/album.model';
-import { getAlbums } from '@/services/album.service';
+import { ICategory } from '@/models/category.model';
+import { getCategories } from '@/services/category.service';
 import { useEffect, useState } from 'react';
 import ScrollList from '../scrollList';
 
-const Album = () => {
-  const [albums, setAlbums] = useState<IAlbum[]>([]);
+const Category = () => {
+  const [categories, setCategories] = useState<ICategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const translation = useScopedI18n('albums');
   useEffect(() => {
     const fetchAlbums = async () => {
       try {
-        const fetchedAlbums = await getAlbums();
-        setAlbums(fetchedAlbums.slice(0, 9));
+        const fetchedCategories = await getCategories();
+        setCategories(fetchedCategories);
       } catch (error) {
         console.error(translation('errors.loading'), error);
       } finally {
@@ -44,32 +44,14 @@ const Album = () => {
 
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-bold">{translation('title')}</h1>
+      <h1 className="mb-4 text-2xl font-bold">Categories</h1>
       <div className="flex space-x-4 overflow-x-scroll">
-        {albums.map((album, index) => (
-          <ScrollList
-            href="/album/"
-            id={album.id}
-            key={index}
-            name={album.title}
-            imageId={album.picture}
-          />
+        {categories.map((category, index) => (
+          <ScrollList href="/category/" id={category.id} key={index} name={category.name} />
         ))}
       </div>
     </div>
   );
 };
 
-export default Album;
-
-// Ajoutez ces styles dans votre fichier global.css
-/*
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-*/
+export default Category;
