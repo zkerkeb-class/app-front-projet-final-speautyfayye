@@ -16,8 +16,6 @@ const PlaylistContent = ({ playlist }: PlaylistContentProps) => {
   const nextTracks = useContext(nextTracksContext);
   const player = useContext(playerContext);
 
-  console.log(playlist);
-
   const selectedTrack = playlist.tracks.find((t) => t.id === audio.track?.id);
 
   const handleTrackClick = (track: ITrack) => {
