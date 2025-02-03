@@ -1,9 +1,8 @@
-import React from 'react';
-import { getPlaylistById } from '@/services/playlist.service';
 import PlaylistContent from '@/components/PlaylistContent';
 import { IPlaylistExt } from '@/models/playlist.model';
-import { Suspense } from 'react';
+import { getPlaylistById } from '@/services/playlist.service';
 import { Loader2 } from 'lucide-react';
+import { Suspense } from 'react';
 
 interface PageProps {
   params: Promise<{

@@ -1,9 +1,9 @@
 // page.tsx
-import { Suspense } from 'react';
-import { getAlbumById } from '@/services/album.service';
 import AlbumContent from '@/components/AlbumContent';
 import { IAlbumExt } from '@/models/album.model';
+import { getAlbumById } from '@/services/album.service';
 import { Loader2 } from 'lucide-react';
+import { Suspense } from 'react';
 
 interface PageProps {
   params: Promise<{
@@ -17,6 +17,7 @@ export default async function Page({ params }: PageProps) {
 
   try {
     album = await getAlbumById(Number(id));
+    console.log('🚀 ~ Page ~ album:', album);
   } catch (error) {
     console.error('Error fetching album:', error);
   }

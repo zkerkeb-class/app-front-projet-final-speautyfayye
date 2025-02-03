@@ -1,9 +1,8 @@
-import React from 'react';
-import { getArtistById } from '@/services/artist.service';
 import ArtistContent from '@/components/ArtistContent';
+import { IArtistExt } from '@/models/artist.model';
+import { getArtistById } from '@/services/artist.service';
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
-import { IArtistExt } from '@/models/artist.model';
 
 interface PageProps {
   params: Promise<{
