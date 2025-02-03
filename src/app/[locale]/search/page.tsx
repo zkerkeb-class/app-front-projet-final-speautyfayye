@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Music, Disc, Users, ListMusic, Tag } from 'lucide-react';
+import Link from 'next/link';
 
 type TabType = 'tracks' | 'albums' | 'artists' | 'playlists' | 'categories';
 
@@ -29,7 +30,7 @@ export default function SearchPage() {
   const [artists, setArtists] = useState<(Artist | ArtistExt)[]>([]);
   const [playlists, setPlaylists] = useState<(Playlist | PlaylistExt)[]>([]);
   const [categories, setCategories] = useState<(Category | CategoryExt)[]>([]);
-  const [activeTab, setActiveTab] = useState<TabType>('tracks');
+  // const [activeTab, setActiveTab] = useState<TabType>('tracks');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -112,11 +113,11 @@ export default function SearchPage() {
         categories: filteredCategories.length,
       };
 
-      const maxCategory = Object.entries(resultCounts).reduce((a, b) =>
-        b[1] > a[1] ? b : a,
-      )[0] as TabType;
+      // const maxCategory = Object.entries(resultCounts).reduce((a, b) =>
+      //   b[1] > a[1] ? b : a,
+      // )[0] as TabType;
 
-      setActiveTab(maxCategory);
+      // setActiveTab(maxCategory);
     } catch (err) {
       setError('Une erreur est survenue lors de la recherche');
       console.error(err);
@@ -171,7 +172,7 @@ export default function SearchPage() {
         </Badge>
       </h1>
 
-      <Tabs value={activeTab} defaultValue={activeTab} className="space-y-6">
+      <Tabs className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="tracks" className="space-x-2">
             <Music className="h-4 w-4" />
@@ -198,26 +199,28 @@ export default function SearchPage() {
         <TabsContent value="tracks" className="mt-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {tracks.map((track) => (
-              <Card key={track.id} className="transition-colors hover:bg-accent/50">
-                <CardHeader>
-                  <CardTitle className="line-clamp-1">{track.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      Durée : {formatDuration(track.duration)}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {'album' in track && track.album && (
-                        <Badge variant="outline">{track.album.title}</Badge>
-                      )}
-                      {'category' in track && track.category && (
-                        <Badge variant="secondary">{track.category.name}</Badge>
-                      )}
+              <Link href={`/track/${track.id}`} key={track.id}>
+                <Card className="transition-colors hover:bg-accent/50">
+                  <CardHeader>
+                    <CardTitle className="line-clamp-1">{track.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Durée : {formatDuration(track.duration)}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {'album' in track && track.album && (
+                          <Badge variant="outline">{track.album.title}</Badge>
+                        )}
+                        {'category' in track && track.category && (
+                          <Badge variant="secondary">{track.category.name}</Badge>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         </TabsContent>
@@ -225,19 +228,21 @@ export default function SearchPage() {
         <TabsContent value="albums" className="mt-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {albums.map((album) => (
-              <Card key={album.id} className="transition-colors hover:bg-accent/50">
-                <CardHeader>
-                  <CardTitle className="line-clamp-1">{album.title}</CardTitle>
-                  <CardDescription>
-                    Sortie le{' '}
-                    {new Date(album.releaseDate).toLocaleDateString('fr-FR', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+              <Link href={`/album/${album.id}`} key={album.id}>
+                <Card className="transition-colors hover:bg-accent/50">
+                  <CardHeader>
+                    <CardTitle className="line-clamp-1">{album.title}</CardTitle>
+                    <CardDescription>
+                      Sortie le{' '}
+                      {new Date(album.releaseDate).toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
             ))}
           </div>
         </TabsContent>
@@ -245,12 +250,14 @@ export default function SearchPage() {
         <TabsContent value="artists" className="mt-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {artists.map((artist) => (
-              <Card key={artist.id} className="transition-colors hover:bg-accent/50">
-                <CardHeader>
-                  <CardTitle className="line-clamp-1">{artist.name}</CardTitle>
-                  <CardDescription className="line-clamp-2">{artist.bio}</CardDescription>
-                </CardHeader>
-              </Card>
+              <Link href={`/artist/${artist.id}`} key={artist.id}>
+                <Card className="transition-colors hover:bg-accent/50">
+                  <CardHeader>
+                    <CardTitle className="line-clamp-1">{artist.name}</CardTitle>
+                    <CardDescription className="line-clamp-2">{artist.bio}</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
             ))}
           </div>
         </TabsContent>
@@ -258,11 +265,13 @@ export default function SearchPage() {
         <TabsContent value="playlists" className="mt-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {playlists.map((playlist) => (
-              <Card key={playlist.id} className="transition-colors hover:bg-accent/50">
-                <CardHeader>
-                  <CardTitle className="line-clamp-1">{playlist.title}</CardTitle>
-                </CardHeader>
-              </Card>
+              <Link href={`/playlist/${playlist.id}`} key={playlist.id}>
+                <Card className="transition-colors hover:bg-accent/50">
+                  <CardHeader>
+                    <CardTitle className="line-clamp-1">{playlist.title}</CardTitle>
+                  </CardHeader>
+                </Card>
+              </Link>
             ))}
           </div>
         </TabsContent>
