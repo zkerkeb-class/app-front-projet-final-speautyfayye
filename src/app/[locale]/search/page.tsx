@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Music, Disc, Users, ListMusic, Tag } from 'lucide-react';
 import Link from 'next/link';
 
-type TabType = 'tracks' | 'albums' | 'artists' | 'playlists' | 'categories';
+// type TabType = 'tracks' | 'albums' | 'artists' | 'playlists' | 'categories';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -105,13 +105,13 @@ export default function SearchPage() {
       setCategories(filteredCategories);
 
       // Set active tab based on which category has the most results
-      const resultCounts = {
-        tracks: formattedTracks.length,
-        albums: filteredAlbums.length,
-        artists: filteredArtists.length,
-        playlists: filteredPlaylists.length,
-        categories: filteredCategories.length,
-      };
+      // const resultCounts = {
+      //   tracks: formattedTracks.length,
+      //   albums: filteredAlbums.length,
+      //   artists: filteredArtists.length,
+      //   playlists: filteredPlaylists.length,
+      //   categories: filteredCategories.length,
+      // };
 
       // const maxCategory = Object.entries(resultCounts).reduce((a, b) =>
       //   b[1] > a[1] ? b : a,
