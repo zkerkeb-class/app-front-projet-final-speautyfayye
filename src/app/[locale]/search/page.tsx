@@ -1,24 +1,24 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { getTracks } from '@/services/track.service';
-import { getAlbums } from '@/services/album.service';
-import { getArtists } from '@/services/artist.service';
-import { getPlaylists } from '@/services/playlist.service';
-import { getCategories } from '@/services/category.service';
-import { Track, TrackExt } from '@/models/track.model';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Album, AlbumExt } from '@/models/album.model';
 import { Artist, ArtistExt } from '@/models/artist.model';
-import { Playlist, PlaylistExt } from '@/models/playlist.model';
 import { Category, CategoryExt } from '@/models/category.model';
 import { ITrackFilters } from '@/models/filter.model';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Music, Disc, Users, ListMusic, Tag } from 'lucide-react';
+import { Playlist, PlaylistExt } from '@/models/playlist.model';
+import { Track, TrackExt } from '@/models/track.model';
+import { getAlbums } from '@/services/album.service';
+import { getArtists } from '@/services/artist.service';
+import { getCategories } from '@/services/category.service';
+import { getPlaylists } from '@/services/playlist.service';
+import { getTracks } from '@/services/track.service';
+import { Disc, ListMusic, Music, Tag, Users } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 // type TabType = 'tracks' | 'albums' | 'artists' | 'playlists' | 'categories';
 

@@ -68,6 +68,7 @@ export default function StreamImage(props: IProps) {
             alt={props.alt ?? 'Image'}
             width={props.width ? props.width : 300}
             height={props.height ? props.height : 300}
+            lazyRoot="lazy"
           />
         ) : (
           <div className="flex flex-col items-center justify-center rounded border">
