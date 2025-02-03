@@ -13,6 +13,7 @@ export interface ITrack {
   picture?: string;
   audio: string;
   lyrics?: string;
+  number_of_plays: number;
 }
 
 export interface ITrackExt extends ITrack {
@@ -32,6 +33,7 @@ export class Track implements ITrack {
   picture?: string;
   audio: string;
   lyrics?: string;
+  number_of_plays: number;
 
   constructor(data: ITrack) {
     this.id = data.id;
@@ -44,6 +46,7 @@ export class Track implements ITrack {
     this.picture = data.picture;
     this.audio = data.audio;
     this.lyrics = data.lyrics;
+    this.number_of_plays = data.number_of_plays;
   }
 }
 

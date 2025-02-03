@@ -21,6 +21,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 // type TabType = 'tracks' | 'albums' | 'artists' | 'playlists' | 'categories';
+type sort = 'duration' | 'releaseDate' | 'alphabetic' | 'popularity' | undefined;
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -33,6 +34,8 @@ export default function SearchPage() {
   // const [activeTab, setActiveTab] = useState<TabType>('tracks');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [sort, setSort] = useState<sort>(undefined);
 
   const loadSearchResults = async () => {
     if (!query) return;
@@ -197,31 +200,84 @@ export default function SearchPage() {
         </TabsList>
 
         <TabsContent value="tracks" className="mt-6">
+          <div className="my-4 flex items-center justify-end">
+            <p className="text-sm text-muted-foreground">
+              Trier par :
+              <button
+                onClick={() => setSort('duration')}
+                className={`ml-2 rounded-md px-2 py-1 ${
+                  sort === 'duration' ? 'bg-primary' : 'bg-accent text-white'
+                }`}
+              >
+                Durée
+              </button>
+              <button
+                onClick={() => setSort('releaseDate')}
+                className={`ml-2 rounded-md px-2 py-1 ${
+                  sort === 'releaseDate' ? 'bg-primary' : 'bg-accent text-white'
+                }`}
+              >
+                Date de sortie
+              </button>
+              <button
+                onClick={() => setSort('alphabetic')}
+                className={`ml-2 rounded-md px-2 py-1 ${
+                  sort === 'alphabetic' ? 'bg-primary' : 'bg-accent text-white'
+                }`}
+              >
+                Alphabétique
+              </button>
+              <button
+                onClick={() => setSort('popularity')}
+                className={`ml-2 rounded-md px-2 py-1 ${
+                  sort === 'popularity' ? 'bg-primary' : 'bg-accent text-white'
+                }`}
+              >
+                Nombre d&apos;écoutes
+              </button>
+            </p>
+          </div>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {tracks.map((track) => (
-              <Link href={`/track/${track.id}`} key={track.id}>
-                <Card className="transition-colors hover:bg-accent/50">
-                  <CardHeader>
-                    <CardTitle className="line-clamp-1">{track.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">
-                        Durée : {formatDuration(track.duration)}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {'album' in track && track.album && (
-                          <Badge variant="outline">{track.album.title}</Badge>
-                        )}
-                        {'category' in track && track.category && (
-                          <Badge variant="secondary">{track.category.name}</Badge>
-                        )}
+            {tracks
+              .sort((a, b) => {
+                switch (sort) {
+                  case 'duration':
+                    return Number(a.duration) - Number(b.duration);
+                  case 'releaseDate':
+                    return a.releaseDate > b.releaseDate ? -1 : 1;
+                  case 'alphabetic':
+                    return a.title > b.title ? 1 : -1;
+                  case 'popularity':
+                    return a.number_of_plays > b.number_of_plays ? -1 : 1;
+                  case undefined:
+                  default:
+                    return 1;
+                }
+              })
+              .map((track) => (
+                <Link href={`/track/${track.id}`} key={track.id}>
+                  <Card className="transition-colors hover:bg-accent/50">
+                    <CardHeader>
+                      <CardTitle className="line-clamp-1">{track.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">
+                          Durée : {formatDuration(track.duration)}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {'album' in track && track.album && (
+                            <Badge variant="outline">{track.album.title}</Badge>
+                          )}
+                          {'category' in track && track.category && (
+                            <Badge variant="secondary">{track.category.name}</Badge>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
           </div>
         </TabsContent>
 
