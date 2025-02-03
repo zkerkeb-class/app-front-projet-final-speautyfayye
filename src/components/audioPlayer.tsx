@@ -227,12 +227,10 @@ const AudioPlayer: React.FC = () => {
                   <StreamImage imageId={track.track.picture} size={800} />
                 </div>
                 <div>
-                  <h2 className="text-7xl">{track.track?.title}</h2>
-                  <h2 className="text-6xl">
+                  <h2 className="text-2xl">{track.track?.title}</h2>
+                  <h2 className="text-xl">
                     {(track.track?.artist as IArtist)?.name ?? 'Artiste inconnu'}
                   </h2>
-                  <p>Catégorie: {track.track?.category?.name ?? '?'}</p>
-                  <p></p>
                 </div>
               </div>
             </div>
