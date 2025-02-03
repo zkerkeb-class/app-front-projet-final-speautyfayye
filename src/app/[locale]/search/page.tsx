@@ -1,7 +1,9 @@
 'use client';
 
+import { playerContext, trackContext } from '@/app/providers';
+import TracksList from '@/components/tracksList';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Album, AlbumExt } from '@/models/album.model';
@@ -9,7 +11,7 @@ import { Artist, ArtistExt } from '@/models/artist.model';
 import { Category, CategoryExt } from '@/models/category.model';
 import { ITrackFilters } from '@/models/filter.model';
 import { Playlist, PlaylistExt } from '@/models/playlist.model';
-import { Track, TrackExt } from '@/models/track.model';
+import { ITrackExt, Track, TrackExt } from '@/models/track.model';
 import { getAlbums } from '@/services/album.service';
 import { getArtists } from '@/services/artist.service';
 import { getCategories } from '@/services/category.service';
@@ -18,7 +20,7 @@ import { getTracks } from '@/services/track.service';
 import { Disc, ListMusic, Music, Tag, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 // type TabType = 'tracks' | 'albums' | 'artists' | 'playlists' | 'categories';
 type sort = 'duration' | 'releaseDate' | 'alphabetic' | 'popularity' | undefined;
@@ -36,6 +38,22 @@ export default function SearchPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [sort, setSort] = useState<sort>(undefined);
+
+  const audio = useContext(trackContext);
+  const player = useContext(playerContext);
+
+  const handleTrackClick = (track: ITrackExt) => {
+    if (audio.track && track.id === audio.track.id) {
+      if (player.isPlaying) {
+        player.pause();
+      } else {
+        player.play();
+      }
+    } else {
+      audio.setTrack(track);
+      player.play();
+    }
+  };
 
   const loadSearchResults = async () => {
     if (!query) return;
@@ -127,12 +145,6 @@ export default function SearchPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const formatDuration = (seconds: string) => {
-    const minutes = Math.floor(Number(seconds) / 60);
-    const secs = Math.floor(Number(seconds) % 60);
-    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
   useEffect(() => {
@@ -237,48 +249,24 @@ export default function SearchPage() {
               </button>
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {tracks
-              .sort((a, b) => {
-                switch (sort) {
-                  case 'duration':
-                    return Number(a.duration) - Number(b.duration);
-                  case 'releaseDate':
-                    return a.releaseDate > b.releaseDate ? -1 : 1;
-                  case 'alphabetic':
-                    return a.title > b.title ? 1 : -1;
-                  case 'popularity':
-                    return a.number_of_plays > b.number_of_plays ? -1 : 1;
-                  case undefined:
-                  default:
-                    return 1;
-                }
-              })
-              .map((track) => (
-                <Link href={`/track/${track.id}`} key={track.id}>
-                  <Card className="transition-colors hover:bg-accent/50">
-                    <CardHeader>
-                      <CardTitle className="line-clamp-1">{track.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground">
-                          Durée : {formatDuration(track.duration)}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {'album' in track && track.album && (
-                            <Badge variant="outline">{track.album.title}</Badge>
-                          )}
-                          {'category' in track && track.category && (
-                            <Badge variant="secondary">{track.category.name}</Badge>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-          </div>
+          <TracksList
+            tracks={tracks.sort((a, b) => {
+              switch (sort) {
+                case 'duration':
+                  return Number(a.duration) - Number(b.duration);
+                case 'releaseDate':
+                  return a.releaseDate > b.releaseDate ? -1 : 1;
+                case 'alphabetic':
+                  return a.title > b.title ? 1 : -1;
+                case 'popularity':
+                  return a.number_of_plays > b.number_of_plays ? -1 : 1;
+                case undefined:
+                default:
+                  return 1;
+              }
+            })}
+            onClick={handleTrackClick}
+          />
         </TabsContent>
 
         <TabsContent value="albums" className="mt-6">
