@@ -17,7 +17,6 @@ export default async function Page({ params }: PageProps) {
 
   try {
     album = await getAlbumById(Number(id));
-    console.log('🚀 ~ Page ~ album:', album);
   } catch (error) {
     console.error('Error fetching album:', error);
   }

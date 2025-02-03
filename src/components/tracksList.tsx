@@ -1,8 +1,8 @@
 import { playerContext, trackContext } from '@/app/providers';
 import { formatDuration } from '@/constants/data';
 import { IArtist } from '@/models/artist.model';
-import { ITrackExt } from '@/models/track.model';
 import { IPlaylist } from '@/models/playlist.model';
+import { ITrackExt } from '@/models/track.model';
 import { getPlaylists } from '@/services/playlist.service';
 import { EllipsisVertical, Minus, Pause, Play, Plus } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';

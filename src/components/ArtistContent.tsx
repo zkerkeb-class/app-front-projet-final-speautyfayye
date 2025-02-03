@@ -88,13 +88,7 @@ const ArtistContent = ({ artist }: ArtistContentProps) => {
           </h2>
           <div className="flex flex-col gap-y-1">
             {artist.tracks?.length ? (
-              <TracksList
-                tracks={artist.tracks.map((t) => {
-                  return { ...t, artist: artist.name };
-                })}
-                onClick={handleTrackClick}
-                entityId={artist.id}
-              />
+              <TracksList tracks={artist.tracks} onClick={handleTrackClick} entityId={artist.id} />
             ) : (
               'No tracks found.'
             )}

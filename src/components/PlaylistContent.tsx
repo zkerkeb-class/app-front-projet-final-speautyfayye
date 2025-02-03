@@ -16,6 +16,8 @@ const PlaylistContent = ({ playlist }: PlaylistContentProps) => {
   const nextTracks = useContext(nextTracksContext);
   const player = useContext(playerContext);
 
+  console.log(playlist);
+
   const selectedTrack = playlist.tracks.find((t) => t.id === audio.track?.id);
 
   const handleTrackClick = (track: ITrack) => {
@@ -100,7 +102,7 @@ const PlaylistContent = ({ playlist }: PlaylistContentProps) => {
           </h2>
           <div className="flex flex-col gap-y-1">
             <TracksList
-              tracks={playlist.tracks.map((t) => ({ ...t, artist: playlist.title }))}
+              tracks={playlist.tracks}
               onClick={handleTrackClick}
               deletable
               entityId={playlist.id}

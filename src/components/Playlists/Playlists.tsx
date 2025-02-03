@@ -15,7 +15,6 @@ const Playlists = () => {
     const fetchPlaylists = async () => {
       try {
         const fetchedPlaylists = await getPlaylists();
-        console.log('🚀 ~ fetchPlaylists ~ fetchedPlaylists:', fetchedPlaylists);
         setPlaylists(fetchedPlaylists);
       } catch (error) {
         console.error(translation('errors.loading'), error);
