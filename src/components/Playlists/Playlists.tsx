@@ -1,20 +1,21 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { getPlaylists } from '@/services/playlist.service';
-import { IPlaylist } from '@/models/playlist.model';
 import { useScopedI18n } from '@/locales/client';
+import { IPlaylistExt } from '@/models/playlist.model';
+import { getPlaylists } from '@/services/playlist.service';
+import { useEffect, useState } from 'react';
 import ScrollList from '../scrollList';
 import { Skeleton } from '../ui/skeleton';
 
 const Playlists = () => {
-  const [playlists, setPlaylists] = useState<IPlaylist[]>([]);
+  const [playlists, setPlaylists] = useState<IPlaylistExt[]>([]);
   const translation = useScopedI18n('playlist.playlists');
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
         const fetchedPlaylists = await getPlaylists();
+        console.log('🚀 ~ fetchPlaylists ~ fetchedPlaylists:', fetchedPlaylists);
         setPlaylists(fetchedPlaylists);
       } catch (error) {
         console.error(translation('errors.loading'), error);
@@ -52,7 +53,7 @@ const Playlists = () => {
             id={playlist.id}
             key={index}
             name={playlist.title}
-            // imageId={playlist.picture}
+            imageId={playlist.tracks[0]?.picture}
           />
         ))}
       </div>
