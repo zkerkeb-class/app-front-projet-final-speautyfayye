@@ -5,18 +5,19 @@ import { getArtists } from '@/services/artist.service';
 import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import ScrollList from '../scrollList';
+import { useScopedI18n } from '@/locales/client';
 
 const Artists = () => {
   const [artists, setArtists] = useState<IArtist[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  const translation = useScopedI18n('artists');
   useEffect(() => {
     const fetchArtists = async () => {
       try {
         const fetchedArtists = await getArtists();
         setArtists(fetchedArtists.slice(0, 9));
       } catch (error) {
-        console.error('Erreur lors du chargement des artistes :', error);
+        console.error(translation('errors.loading'), error);
       } finally {
         setIsLoading(false);
       }
@@ -43,7 +44,7 @@ const Artists = () => {
 
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-bold">Artistes Populaires</h1>
+      <h1 className="mb-4 text-2xl font-bold">{translation('title')}</h1>
       <div className="flex space-x-4 overflow-x-scroll">
         {artists.map((artist, index) => (
           <ScrollList

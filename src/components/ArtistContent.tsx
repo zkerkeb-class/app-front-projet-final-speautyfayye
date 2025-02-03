@@ -44,7 +44,13 @@ const ArtistContent = ({ artist }: ArtistContentProps) => {
     <div className="h-full w-full overflow-hidden overflow-y-auto bg-gradient-to-b from-neutral-100 to-neutral-200 pb-24 dark:from-neutral-900 dark:to-black sm:pb-32">
       <div className="relative min-h-[350px] w-full sm:min-h-[400px] md:min-h-[450px] lg:min-h-[500px]">
         <div className="h-full">
-          <StreamImage size={800} imageId={artist.picture} />
+          <StreamImage
+            size={800}
+            imageId={artist.picture}
+            height={600}
+            objectFit="cover"
+            width={800}
+          />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-neutral-900/60 to-neutral-900/90" />
 

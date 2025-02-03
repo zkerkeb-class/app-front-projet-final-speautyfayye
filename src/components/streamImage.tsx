@@ -12,6 +12,7 @@ interface IProps {
   height?: number;
   size: 200 | 400 | 800;
   alt?: string;
+  objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
 }
 
 export default function StreamImage(props: IProps) {
@@ -60,7 +61,9 @@ export default function StreamImage(props: IProps) {
       ) : props.imageId ? (
         imageSrc ? (
           <Image
-            className={`${props.customClasses ? props.customClasses : ''} h-full w-full`}
+            className={`${props.customClasses ? props.customClasses : ''} ${
+              props.height ? `h-[${props.height}px]` : 'h-[300px]'
+            } w-full object-cover`}
             src={imageSrc}
             alt={props.alt ?? 'Image'}
             width={props.width ? props.width : 300}

@@ -33,19 +33,6 @@ const Playlist = () => {
             <Link href="/createPlaylist">{translation('createPlaylist')}</Link>
           </button>
         </div>
-        <div className="w-full space-y-5 rounded-md bg-neutral-200 px-5 py-3 dark:bg-neutral-700/40">
-          <div className="space-y-2">
-            <h6 className="text-sm font-semibold tracking-wide text-neutral-900 dark:text-neutral-50">
-              {translation('findPodcasts.title')}
-            </h6>
-            <p className="text-xs font-medium text-neutral-700 dark:text-neutral-100">
-              {translation('findPodcasts.description')}
-            </p>
-          </div>
-          <button className="h-8 w-fit rounded-full bg-neutral-900 px-4 text-sm font-semibold text-neutral-50 duration-100 ease-in-out hover:scale-105 dark:bg-neutral-50 dark:text-neutral-950">
-            {translation('createPlaylist')}
-          </button>
-        </div>
       </div>
     </div>
   );

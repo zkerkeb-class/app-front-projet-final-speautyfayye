@@ -3,7 +3,7 @@ export default {
   playlist: {
     library: 'Bibliothèque',
     createFirstPlaylist: {
-      title: 'Créez votre première playlist',
+      title: 'Créez votre playlist',
       description: "C'est facile, cliquez simplement sur le bouton ci-dessus.",
     },
     findPodcasts: {
@@ -35,5 +35,17 @@ export default {
     loading: 'Création...',
     createPlaylist: 'Créer une playlist',
     placeholder: 'Entrez le nom de la playlist...',
+  },
+  artists: {
+    title: 'Artistes Populaires',
+    errors: {
+      loading: 'Erreur lors du chargement des artistes :',
+    },
+  },
+  albums: {
+    title: 'Albums Populaires',
+    errors: {
+      loading: 'Erreur lors du chargement des albums :',
+    },
   },
 } as const;
