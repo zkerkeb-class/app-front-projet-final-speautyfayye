@@ -1,7 +1,8 @@
 'use client';
 
 // components/album-content.tsx
-import { nextTracksContext, playerContext, trackContext } from '@/app/providers';
+import { groupContext, nextTracksContext, playerContext, trackContext } from '@/app/providers';
+import { socket } from '@/app/socket';
 import TracksList from '@/components/tracksList';
 import { IAlbumExt } from '@/models/album.model';
 import { ITrackExt } from '@/models/track.model';
@@ -18,6 +19,7 @@ const AlbumContent = ({ album }: AlbumContentProps) => {
   const audio = useContext(trackContext);
   const nextTracks = useContext(nextTracksContext);
   const player = useContext(playerContext);
+  const group = useContext(groupContext);
 
   const handleTrackClick = (track: ITrackExt) => {
     if (audio.track && track.id === audio.track.id) {
@@ -42,9 +44,17 @@ const AlbumContent = ({ album }: AlbumContentProps) => {
       }
     } else {
       if (album?.tracks?.length) {
-        audio.setTrack({ ...album.tracks[0], artist: album.artist });
-        nextTracks.setNextTracks(album.tracks);
-        player.play();
+        if (group?.groupId) {
+          socket.emit('track', {
+            currentTrack: { ...album.tracks[0], artist: album.artist },
+            nextTracksList: album.tracks,
+            groupId: group.groupId,
+          });
+        } else {
+          audio.setTrack({ ...album.tracks[0], artist: album.artist });
+          nextTracks.setNextTracks(album.tracks);
+          player.play();
+        }
       }
     }
   };

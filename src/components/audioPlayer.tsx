@@ -1,6 +1,6 @@
 'use client';
 
-import { nextTracksContext, playerContext, trackContext } from '@/app/providers';
+import { groupContext, nextTracksContext, playerContext, trackContext } from '@/app/providers';
 import { Slider } from '@/components/ui/slider';
 import { IArtist } from '@/models/artist.model';
 import { ITrack } from '@/models/track.model';
@@ -48,9 +48,7 @@ const AudioPlayer: React.FC = () => {
   const [isShuffling, setIsShuffling] = useState(false);
 
   const [joined, setJoined] = useState(false);
-  const [isConnected, setIsConnected] = useState(socket.connected);
-  const [groupId, setGroupId] = useState('');
-  const [transport, setTransport] = useState('N/A');
+  // const [transport, setTransport] = useState('N/A');
 
   const [isLyricsOpen, setIsLyricsOpen] = useState(false);
   const [isNextTracksOpen, setIsNextTracksOpen] = useState(false);
@@ -59,6 +57,7 @@ const AudioPlayer: React.FC = () => {
   const track = useContext(trackContext);
   const nextTracks = useContext(nextTracksContext);
   const player = useContext(playerContext);
+  const group = useContext(groupContext);
 
   const [error, setError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState<boolean>(false);
@@ -151,7 +150,7 @@ const AudioPlayer: React.FC = () => {
     if (emit && joined) {
       socket.emit('action', {
         action: 'seek',
-        groupId,
+        groupId: group.groupId,
         time: value[0],
       });
     }
@@ -188,19 +187,9 @@ const AudioPlayer: React.FC = () => {
 
   //#region Socket events
   useEffect(() => {
-    if (groupId) {
-      function onConnect() {
-        setTransport(socket.io.engine.transport.name);
-        console.log('🚀 ~ onConnect ~ socket:', socket.id);
-
-        socket.io.engine.on('upgrade', (transport) => {
-          setTransport(transport.name);
-        });
-      }
-
+    if (group.groupId) {
       socket.on('action', (action) => {
-        console.log('🚀 ~ socket.on ~ action:', action);
-        if (action.groupId !== groupId) return;
+        if (action.groupId !== group.groupId) return;
         if (action.action === 'play') {
           play(false);
         } else if (action.action === 'pause') {
@@ -214,20 +203,19 @@ const AudioPlayer: React.FC = () => {
         }
       });
 
-      function onDisconnect() {
-        setTransport('N/A');
-      }
-
-      socket.on('connect', onConnect);
-      socket.on('disconnect', onDisconnect);
+      socket.on('track', ({ currentTrack, nextTracksList, groupId }) => {
+        if (groupId !== group.groupId) return;
+        nextTracks.setNextTracks(nextTracksList);
+        track.setTrack(currentTrack);
+        player.play();
+      });
 
       return () => {
         socket.off('action');
-        socket.off('connect', onConnect);
-        socket.off('disconnect', onDisconnect);
+        socket.off('track');
       };
     }
-  }, [groupId]);
+  }, [group.groupId]);
 
   const joinGroup = (id?: string) => {
     if (!id) {
@@ -235,14 +223,14 @@ const AudioPlayer: React.FC = () => {
     }
     socket.emit('join', id);
     setJoined(true);
-    setGroupId(id);
+    group.setGroupId(id);
   };
 
   const play = (emit: boolean) => {
     if (emit && joined) {
       socket.emit('action', {
         action: 'play',
-        groupId,
+        groupId: group.groupId,
       });
     }
     player.play();
@@ -252,7 +240,7 @@ const AudioPlayer: React.FC = () => {
     if (emit && joined) {
       socket.emit('action', {
         action: 'pause',
-        groupId,
+        groupId: group.groupId,
       });
     }
     player.pause();
@@ -273,7 +261,7 @@ const AudioPlayer: React.FC = () => {
       if (emit && joined) {
         socket.emit('action', {
           action: 'next',
-          groupId,
+          groupId: group.groupId,
         });
       }
       track.setTrack(next);
@@ -290,7 +278,7 @@ const AudioPlayer: React.FC = () => {
       if (emit && joined) {
         socket.emit('action', {
           action: 'previous',
-          groupId,
+          groupId: group.groupId,
         });
       }
       track.setTrack(previous);
@@ -563,9 +551,9 @@ const AudioPlayer: React.FC = () => {
                 <input
                   disabled={joined}
                   type="text"
-                  value={groupId}
+                  value={group?.groupId ?? ''}
                   onChange={(e) => {
-                    setGroupId(e.target.value);
+                    group.setGroupId(e.target.value);
                     if (e.target.value.length === 6) {
                       joinGroup(e.target.value);
                     }
@@ -579,7 +567,7 @@ const AudioPlayer: React.FC = () => {
                   className="text-neutral-500 hover:text-neutral-900"
                   title="Leave group"
                   onClick={() => {
-                    setGroupId('');
+                    group.setGroupId(undefined);
                     setJoined(false);
                   }}
                 >

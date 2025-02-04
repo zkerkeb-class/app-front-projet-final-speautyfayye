@@ -1,5 +1,6 @@
 'use client';
-import { playerContext, trackContext } from '@/app/providers';
+import { groupContext, playerContext, trackContext } from '@/app/providers';
+import { socket } from '@/app/socket';
 import TracksList from '@/components/tracksList';
 import { ICategoryExt } from '@/models/category.model';
 import { ITrack } from '@/models/track.model';
@@ -12,6 +13,7 @@ interface CategoryContentProps {
 const CategoryContent = ({ category }: CategoryContentProps) => {
   const audio = useContext(trackContext);
   const player = useContext(playerContext);
+  const group = useContext(groupContext);
 
   const handleTrackClick = (track: ITrack) => {
     if (audio.track && audio.track.id === track.id) {
@@ -21,8 +23,15 @@ const CategoryContent = ({ category }: CategoryContentProps) => {
         player.play();
       }
     } else {
-      audio.setTrack(track);
-      player.play();
+      if (group?.groupId) {
+        socket.emit('track', {
+          currentTrack: track,
+          groupId: group.groupId,
+        });
+      } else {
+        audio.setTrack(track);
+        player.play();
+      }
     }
   };
 

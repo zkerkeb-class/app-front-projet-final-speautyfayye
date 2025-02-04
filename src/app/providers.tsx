@@ -33,12 +33,12 @@ export const nextTracksContext = createContext<{
   shuffle: () => {},
 });
 
-export const socketIdContext = createContext<{
-  socketId: string | undefined;
-  setSocketId: Dispatch<SetStateAction<string | undefined>>;
+export const groupContext = createContext<{
+  groupId: string | undefined;
+  setGroupId: Dispatch<SetStateAction<string | undefined>>;
 }>({
-  socketId: undefined,
-  setSocketId: () => {},
+  groupId: undefined,
+  setGroupId: () => {},
 });
 
 // Providers Component
@@ -52,7 +52,7 @@ export default function Providers({
   const [track, setTrack] = useState<ITrackExt | undefined>();
   const [nextTracks, setNextTracks] = useState<ITrackExt[] | undefined>(undefined);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [socketId, setSocketId] = useState<string | undefined>(undefined);
+  const [groupId, setGroupId] = useState<string | undefined>(undefined);
 
   // Callback Functions
   const pause = useCallback(() => {
@@ -95,17 +95,17 @@ export default function Providers({
     () => ({ nextTracks, setNextTracks, shuffle }),
     [nextTracks, shuffle],
   );
-  const socketContextValue = useMemo(() => ({ socketId, setSocketId }), [socketId]);
+  const groupContextValue = useMemo(() => ({ groupId, setGroupId }), [groupId]);
 
   return (
     <I18nProviderClient locale={locale}>
-      <socketIdContext.Provider value={socketContextValue}>
+      <groupContext.Provider value={groupContextValue}>
         <trackContext.Provider value={trackContextValue}>
           <nextTracksContext.Provider value={nextTracksContextValue}>
             <playerContext.Provider value={playerContextValue}>{children}</playerContext.Provider>
           </nextTracksContext.Provider>
         </trackContext.Provider>
-      </socketIdContext.Provider>
+      </groupContext.Provider>
     </I18nProviderClient>
   );
 }

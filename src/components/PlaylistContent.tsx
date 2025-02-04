@@ -1,5 +1,6 @@
 'use client';
-import { nextTracksContext, playerContext, trackContext } from '@/app/providers';
+import { groupContext, nextTracksContext, playerContext, trackContext } from '@/app/providers';
+import { socket } from '@/app/socket';
 import TracksList from '@/components/tracksList';
 import { IPlaylistExt } from '@/models/playlist.model';
 import { ITrack } from '@/models/track.model';
@@ -15,6 +16,7 @@ const PlaylistContent = ({ playlist }: PlaylistContentProps) => {
   const audio = useContext(trackContext);
   const nextTracks = useContext(nextTracksContext);
   const player = useContext(playerContext);
+  const group = useContext(groupContext);
 
   const selectedTrack = playlist.tracks.find((t) => t.id === audio.track?.id);
 
@@ -26,9 +28,17 @@ const PlaylistContent = ({ playlist }: PlaylistContentProps) => {
         player.play();
       }
     } else {
-      audio.setTrack(track);
-      nextTracks.setNextTracks(playlist?.tracks || []);
-      player.play();
+      if (group?.groupId) {
+        socket.emit('track', {
+          currentTrack: track,
+          nextTracksList: playlist?.tracks ?? [],
+          groupId: group.groupId,
+        });
+      } else {
+        audio.setTrack(track);
+        nextTracks.setNextTracks(playlist?.tracks || []);
+        player.play();
+      }
     }
   };
 
