@@ -283,7 +283,13 @@ const AudioPlayer: React.FC = () => {
   };
 
   const next = (emit: boolean) => {
-    if (!nextTracks.nextTracks || !track.track) return;
+    console.log(
+      '🚀 ~ next ~ !nextTracks.nextTracks || !track.track:',
+      !nextTracks.nextTracks || !track.track,
+    );
+    if (!nextTracks.nextTracks || !track.track) {
+      return;
+    }
 
     if (isRepeating) {
       if (audioRef.current) {
