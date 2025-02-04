@@ -26,11 +26,9 @@ export const trackContext = createContext<{
 export const nextTracksContext = createContext<{
   nextTracks: ITrackExt[] | undefined;
   setNextTracks: Dispatch<SetStateAction<ITrackExt[] | undefined>>;
-  shuffle: (tracks: ITrackExt[]) => void;
 }>({
   nextTracks: undefined,
   setNextTracks: () => {},
-  shuffle: () => {},
 });
 
 export const groupContext = createContext<{
@@ -63,38 +61,10 @@ export default function Providers({
     setIsPlaying(true);
   }, []);
 
-  const shuffle = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    (tracks: ITrackExt[]) => {
-      if (!tracks.length || !track) {
-        console.warn('Cannot shuffle: tracks or current track is undefined.');
-        return;
-      }
-
-      const firstTrack = tracks.find((t) => t.id === track.id);
-      if (!firstTrack) {
-        console.warn('Track with the specified ID not found.');
-        return;
-      }
-
-      const remainingTracks = tracks.filter((t) => t.id !== track.id);
-      const shuffledTracks = remainingTracks
-        .map((value) => ({ value, sort: Math.random() }))
-        .sort((a, b) => a.sort - b.sort)
-        .map(({ value }) => value);
-
-      setNextTracks([firstTrack, ...shuffledTracks]);
-    },
-    [track],
-  );
-
   // Memoized Values for Contexts
   const playerContextValue = useMemo(() => ({ isPlaying, pause, play }), [isPlaying, pause, play]);
   const trackContextValue = useMemo(() => ({ track, setTrack }), [track]);
-  const nextTracksContextValue = useMemo(
-    () => ({ nextTracks, setNextTracks, shuffle }),
-    [nextTracks, shuffle],
-  );
+  const nextTracksContextValue = useMemo(() => ({ nextTracks, setNextTracks }), [nextTracks]);
   const groupContextValue = useMemo(() => ({ groupId, setGroupId }), [groupId]);
 
   return (

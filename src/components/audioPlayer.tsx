@@ -208,6 +208,9 @@ const AudioPlayer: React.FC = () => {
           handleTimeChange([action.time], false);
         } else if (action.action === 'repeat') {
           setIsRepeating(action.repeat);
+        } else if (action.action === 'shuffle') {
+          suffle(false);
+          nextTracks.setNextTracks(action.nextTracksList);
         }
       });
 
@@ -285,10 +288,8 @@ const AudioPlayer: React.FC = () => {
   };
 
   const next = (emit: boolean) => {
-    console.log(
-      '🚀 ~ next ~ !nextTracks.nextTracks || !track.track:',
-      !nextTracks.nextTracks || !track.track,
-    );
+    console.log('🚀 ~ next ~ !nextTracks.nextTracks', !nextTracks.nextTracks);
+    console.log('🚀 ~ next ~ !track.track', !track.track);
     if (!nextTracks.nextTracks || !track.track) {
       return;
     }
@@ -330,6 +331,26 @@ const AudioPlayer: React.FC = () => {
       track.setTrack(previous);
     }
   };
+
+  const suffle = (emit: boolean) => {
+    if (!nextTracks.nextTracks) return;
+    const list = suffleList(nextTracks.nextTracks, track.track);
+    if (emit && joined) {
+      socket.emit('action', {
+        action: 'shuffle',
+        nextTracksList: list,
+        groupId: group.groupId,
+      });
+    } else {
+      if (isShuffling) {
+        setIsShuffling(false);
+        return;
+      }
+      setIsShuffling(true);
+      nextTracks.setNextTracks(list);
+    }
+  };
+
   //#endregion
 
   return (
@@ -344,18 +365,7 @@ const AudioPlayer: React.FC = () => {
             if (isRepeating) {
               audioRef.current?.play();
             } else {
-              if (track.track) {
-                const currentIndex = nextTracks.nextTracks
-                  ?.map((t) => t.id)
-                  ?.indexOf(track.track.id);
-
-                const next = nextTracks.nextTracks?.at(currentIndex! + 1);
-                if (next) {
-                  track.setTrack(next);
-                  return;
-                }
-              }
-              player.pause();
+              next(true);
             }
           }}
         />
@@ -511,15 +521,7 @@ const AudioPlayer: React.FC = () => {
                     className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
                     title="Shuffle"
                     disabled={!nextTracks.nextTracks}
-                    onClick={() => {
-                      if (!nextTracks.nextTracks) return;
-                      if (isShuffling) {
-                        setIsShuffling(false);
-                        return;
-                      }
-                      setIsShuffling(true);
-                      nextTracks.shuffle(nextTracks.nextTracks);
-                    }}
+                    onClick={() => suffle(true)}
                   >
                     <Shuffle className={`${isShuffling ? 'text-green-500' : ''} h-4 w-4`} />
                   </button>
@@ -725,3 +727,24 @@ function generateRandomString(): string {
   }
   return result;
 }
+
+const suffleList = (tracks: ITrack[], track?: ITrack) => {
+  if (!tracks.length || !track) {
+    console.warn('Cannot shuffle: tracks or current track is undefined.');
+    return;
+  }
+
+  const firstTrack = tracks.find((t) => t.id === track.id);
+  if (!firstTrack) {
+    console.warn('Track with the specified ID not found.');
+    return;
+  }
+
+  const remainingTracks = tracks.filter((t) => t.id !== track.id);
+  const shuffledTracks = remainingTracks
+    .map((value) => ({ value, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ value }) => value);
+
+  return [firstTrack, ...shuffledTracks];
+};
