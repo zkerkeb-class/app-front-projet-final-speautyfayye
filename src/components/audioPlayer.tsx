@@ -201,9 +201,9 @@ const AudioPlayer: React.FC = () => {
         } else if (action.action === 'pause') {
           pause(false);
         } else if (action.action === 'next') {
-          next(false);
+          handleTrackChange(action.currentTrack, action.nextTracksList);
         } else if (action.action === 'previous') {
-          previous(false);
+          handleTrackChange(action.currentTrack, action.nextTracksList);
         } else if (action.action === 'seek') {
           handleTimeChange([action.time], false);
         } else if (action.action === 'repeat') {
@@ -287,48 +287,55 @@ const AudioPlayer: React.FC = () => {
     player.pause();
   };
 
-  const next = (emit: boolean) => {
-    console.log('🚀 ~ next ~ !nextTracks.nextTracks', !nextTracks.nextTracks);
-    console.log('🚀 ~ next ~ !track.track', !track.track);
+  const next = () => {
     if (!nextTracks.nextTracks || !track.track) {
       return;
     }
 
     if (isRepeating) {
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-      }
+      socket.emit('action', {
+        action: 'next',
+        groupId: group.groupId,
+        currentTrack: track.track,
+        nextTracksList: nextTracks.nextTracks,
+      });
       return;
     }
 
     const currentIndex = nextTracks.nextTracks?.map((t) => t.id)?.indexOf(track.track.id);
-
     const next = nextTracks.nextTracks?.at(currentIndex! + 1);
+
     if (next) {
-      if (emit && joined) {
+      if (joined) {
         socket.emit('action', {
           action: 'next',
           groupId: group.groupId,
+          currentTrack: next,
+          nextTracksList: nextTracks.nextTracks,
         });
+      } else {
+        track.setTrack(next);
       }
-      track.setTrack(next);
     }
   };
 
-  const previous = (emit: boolean) => {
+  const previous = () => {
     if (!nextTracks.nextTracks || !track.track) return;
 
     const currentIndex = nextTracks.nextTracks?.map((t) => t.id)?.indexOf(track.track.id);
 
     const previous = nextTracks.nextTracks?.at(currentIndex! - 1);
     if (previous) {
-      if (emit && joined) {
+      if (joined) {
         socket.emit('action', {
-          action: 'previous',
+          action: 'next',
           groupId: group.groupId,
+          currentTrack: previous,
+          nextTracksList: nextTracks.nextTracks,
         });
+      } else {
+        track.setTrack(previous);
       }
-      track.setTrack(previous);
     }
   };
 
@@ -341,17 +348,23 @@ const AudioPlayer: React.FC = () => {
         nextTracksList: list,
         groupId: group.groupId,
       });
+      setIsShuffling(!isShuffling);
     } else {
+      nextTracks.setNextTracks(list);
       if (isShuffling) {
         setIsShuffling(false);
         return;
       }
-      setIsShuffling(true);
-      nextTracks.setNextTracks(list);
+      setIsShuffling(!isShuffling);
     }
   };
 
   //#endregion
+
+  const handleTrackChange = (trackToListen: ITrack, nextTracksList: ITrack[]) => {
+    nextTracks.setNextTracks(nextTracksList);
+    track.setTrack(trackToListen);
+  };
 
   return (
     <>
@@ -365,7 +378,7 @@ const AudioPlayer: React.FC = () => {
             if (isRepeating) {
               audioRef.current?.play();
             } else {
-              next(true);
+              next();
             }
           }}
         />
@@ -529,7 +542,7 @@ const AudioPlayer: React.FC = () => {
                     className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
                     title="Previous"
                     disabled={!nextTracks.nextTracks}
-                    onClick={() => previous(true)}
+                    onClick={() => previous()}
                   >
                     <SkipBack className="h-5 w-5" />
                   </button>
@@ -553,7 +566,7 @@ const AudioPlayer: React.FC = () => {
                     className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
                     title="Next"
                     disabled={!nextTracks.nextTracks}
-                    onClick={() => next(true)}
+                    onClick={() => next()}
                   >
                     <SkipForward className="h-5 w-5" />
                   </button>
@@ -629,7 +642,7 @@ const AudioPlayer: React.FC = () => {
                       joinGroup(e.target.value);
                     }
                   }}
-                  className="w-12 text-[0.68rem] disabled:bg-gray-200 disabled:text-black"
+                  className="w-16 px-1 text-[0.68rem] disabled:bg-gray-200 disabled:text-black"
                   maxLength={6}
                 />
               </div>
