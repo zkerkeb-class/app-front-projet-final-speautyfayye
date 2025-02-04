@@ -28,6 +28,7 @@ const PlaylistContent = ({ playlist }: PlaylistContentProps) => {
         player.play();
       }
     } else {
+      console.log('🚀 ~ handleTrackClick ~ group.groupId:', group.groupId);
       if (group?.groupId) {
         socket.emit('track', {
           currentTrack: track,

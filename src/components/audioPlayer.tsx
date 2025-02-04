@@ -1,15 +1,15 @@
 'use client';
 
 import { groupContext, nextTracksContext, playerContext, trackContext } from '@/app/providers';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { IArtist } from '@/models/artist.model';
 import { ITrack } from '@/models/track.model';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { socket } from '../app/socket';
 import { fetchAudio } from '../services/audio.service';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw } from 'lucide-react';
 
 import {
   Image,
@@ -204,6 +204,8 @@ const AudioPlayer: React.FC = () => {
       });
 
       socket.on('track', ({ currentTrack, nextTracksList, groupId }) => {
+        console.log('🚀 ~ socket.on ~ groupId:', groupId);
+        console.log('🚀 ~ socket.on ~ group.groupId:', group.groupId);
         if (groupId !== group.groupId) return;
         nextTracks.setNextTracks(nextTracksList);
         track.setTrack(currentTrack);
@@ -221,7 +223,7 @@ const AudioPlayer: React.FC = () => {
     if (!id) {
       id = generateRandomString();
     }
-    socket.emit('join', id);
+    socket.emit('join', { groupId: id, socketId: socket.id });
     setJoined(true);
     group.setGroupId(id);
   };
@@ -317,7 +319,7 @@ const AudioPlayer: React.FC = () => {
 
       {/* Error Alert */}
       {error && (
-        <div className="fixed left-1/2 top-6 z-50 w-[90%] max-w-md -translate-x-1/2 transform animate-slideDown">
+        <div className="animate-slideDown fixed left-1/2 top-6 z-50 w-[90%] max-w-md -translate-x-1/2 transform">
           <Alert
             variant="destructive"
             className="flex items-center justify-between gap-4 rounded-lg bg-red-600 p-4 text-white shadow-lg"
