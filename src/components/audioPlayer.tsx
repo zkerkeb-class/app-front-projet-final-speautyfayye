@@ -5,6 +5,7 @@ import { Slider } from '@/components/ui/slider';
 import { IArtist } from '@/models/artist.model';
 import { ITrack } from '@/models/track.model';
 import React, { useContext, useEffect, useRef, useState } from 'react';
+import { socket } from '../app/socket';
 import { fetchAudio } from '../services/audio.service';
 
 import {
@@ -19,6 +20,8 @@ import {
   Shuffle,
   SkipBack,
   SkipForward,
+  UserPlus2,
+  UserX,
   Volume2,
   VolumeX,
   X,
@@ -40,6 +43,11 @@ const AudioPlayer: React.FC = () => {
   const [volume, setVolume] = useState(50);
   const [isRepeating, setIsRepeating] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
+
+  const [joined, setJoined] = useState(false);
+  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [groupId, setGroupId] = useState('');
+  const [transport, setTransport] = useState('N/A');
 
   const [isLyricsOpen, setIsLyricsOpen] = useState(false);
   const [isNextTracksOpen, setIsNextTracksOpen] = useState(false);
@@ -108,7 +116,14 @@ const AudioPlayer: React.FC = () => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const handleTimeChange = (value: number[]) => {
+  const handleTimeChange = (value: number[], emit: boolean) => {
+    if (emit && joined) {
+      socket.emit('action', {
+        action: 'seek',
+        groupId,
+        time: value[0],
+      });
+    }
     const newTime = value[0];
     if (audioRef.current) {
       audioRef.current.currentTime = newTime;
@@ -139,6 +154,118 @@ const AudioPlayer: React.FC = () => {
       audioRef.current.volume = volume / 100;
     }
   }, [volume]);
+
+  //#region Socket events
+  useEffect(() => {
+    if (groupId) {
+      function onConnect() {
+        setTransport(socket.io.engine.transport.name);
+        console.log('🚀 ~ onConnect ~ socket:', socket.id);
+
+        socket.io.engine.on('upgrade', (transport) => {
+          setTransport(transport.name);
+        });
+      }
+
+      socket.on('action', (action) => {
+        console.log('🚀 ~ socket.on ~ action:', action);
+        if (action.groupId !== groupId) return;
+        if (action.action === 'play') {
+          play(false);
+        } else if (action.action === 'pause') {
+          pause(false);
+        } else if (action.action === 'next') {
+          next(false);
+        } else if (action.action === 'previous') {
+          previous(false);
+        } else if (action.action === 'seek') {
+          handleTimeChange([action.time], false);
+        }
+      });
+
+      function onDisconnect() {
+        setTransport('N/A');
+      }
+
+      socket.on('connect', onConnect);
+      socket.on('disconnect', onDisconnect);
+
+      return () => {
+        socket.off('action');
+        socket.off('connect', onConnect);
+        socket.off('disconnect', onDisconnect);
+      };
+    }
+  }, [groupId]);
+
+  const joinGroup = (id?: string) => {
+    if (!id) {
+      id = generateRandomString();
+    }
+    socket.emit('join', id);
+    setJoined(true);
+    setGroupId(id);
+  };
+
+  const play = (emit: boolean) => {
+    if (emit && joined) {
+      socket.emit('action', {
+        action: 'play',
+        groupId,
+      });
+    }
+    player.play();
+  };
+
+  const pause = (emit: boolean) => {
+    if (emit && joined) {
+      socket.emit('action', {
+        action: 'pause',
+        groupId,
+      });
+    }
+    player.pause();
+  };
+
+  const next = (emit: boolean) => {
+    if (!nextTracks.nextTracks || !track.track || !audioRef.current) return;
+
+    if (isRepeating) {
+      audioRef.current.currentTime = 0;
+      return;
+    }
+
+    const currentIndex = nextTracks.nextTracks?.map((t) => t.id)?.indexOf(track.track.id);
+
+    const next = nextTracks.nextTracks?.at(currentIndex! + 1);
+    if (next) {
+      if (emit && joined) {
+        socket.emit('action', {
+          action: 'next',
+          groupId,
+        });
+      }
+      track.setTrack(next);
+    }
+  };
+
+  const previous = (emit: boolean) => {
+    if (!nextTracks.nextTracks || !track.track) return;
+
+    const currentIndex = nextTracks.nextTracks?.map((t) => t.id)?.indexOf(track.track.id);
+
+    const previous = nextTracks.nextTracks?.at(currentIndex! - 1);
+    if (previous) {
+      if (emit && joined) {
+        socket.emit('action', {
+          action: 'previous',
+          groupId,
+        });
+      }
+      track.setTrack(previous);
+    }
+  };
+  //#endregion
 
   return (
     <>
@@ -304,18 +431,7 @@ const AudioPlayer: React.FC = () => {
                     className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
                     title="Previous"
                     disabled={!nextTracks.nextTracks}
-                    onClick={() => {
-                      if (!nextTracks.nextTracks || !track.track) return;
-
-                      const currentIndex = nextTracks.nextTracks
-                        ?.map((t) => t.id)
-                        ?.indexOf(track.track.id);
-
-                      const next = nextTracks.nextTracks?.at(currentIndex! - 1);
-                      if (next) {
-                        track.setTrack(next);
-                      }
-                    }}
+                    onClick={() => previous(true)}
                   >
                     <SkipBack className="h-5 w-5" />
                   </button>
@@ -323,9 +439,9 @@ const AudioPlayer: React.FC = () => {
                     className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-900 transition hover:scale-105 dark:bg-white"
                     onClick={() => {
                       if (player.isPlaying) {
-                        player.pause();
+                        pause(true);
                       } else {
-                        player.play();
+                        play(true);
                       }
                     }}
                   >
@@ -339,23 +455,7 @@ const AudioPlayer: React.FC = () => {
                     className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
                     title="Next"
                     disabled={!nextTracks.nextTracks}
-                    onClick={() => {
-                      if (!nextTracks.nextTracks || !track.track || !audioRef.current) return;
-
-                      if (isRepeating) {
-                        audioRef.current.currentTime = 0;
-                        return;
-                      }
-
-                      const currentIndex = nextTracks.nextTracks
-                        ?.map((t) => t.id)
-                        ?.indexOf(track.track.id);
-
-                      const next = nextTracks.nextTracks?.at(currentIndex! + 1);
-                      if (next) {
-                        track.setTrack(next);
-                      }
-                    }}
+                    onClick={() => next(true)}
                   >
                     <SkipForward className="h-5 w-5" />
                   </button>
@@ -384,7 +484,7 @@ const AudioPlayer: React.FC = () => {
                     max={duration}
                     step={1}
                     className="w-full"
-                    onValueChange={handleTimeChange}
+                    onValueChange={(value) => handleTimeChange(value, true)}
                   />
                   <span className="min-w-[40px] text-xs text-neutral-500 dark:text-neutral-400">
                     {formatTime(duration)}
@@ -394,61 +494,100 @@ const AudioPlayer: React.FC = () => {
             </>
           )}
 
-          {/* Right section - Volume controls */}
-          <div className="hidden items-center justify-end space-x-3 sm:flex">
-            <button
-              className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
-              title="lyrics"
-              disabled={!track.track?.lyrics}
-              onClick={() => {
-                if (!track.track?.lyrics) return;
-                setIsLyricsOpen(!isLyricsOpen);
-                setIsFullScreen(false);
-                setIsNextTracksOpen(false);
-              }}
-            >
-              <Mic2 className="h-4 w-4" />
-            </button>
-            <button
-              className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
-              title="Playlist"
-              disabled={!nextTracks.nextTracks}
-              onClick={() => {
-                if (!nextTracks.nextTracks) return;
-                setIsNextTracksOpen(!isNextTracksOpen);
-                setIsFullScreen(false);
-                setIsLyricsOpen(false);
-              }}
-            >
-              <ListMusic className="h-4 w-4" />
-            </button>
-            <div className="flex items-center space-x-2">
-              <button
-                className="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-                onClick={() => setVolume(volume === 0 ? 50 : 0)}
-              >
-                {volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-              </button>
-              <Slider
-                value={[volume]}
-                max={100}
-                step={1}
-                className="w-24"
-                onValueChange={handleVolumeChange}
-              />
+          {/* Right section */}
+          <div className="items-center justify-end space-y-2">
+            <div className="flex items-center justify-end space-x-2">
+              <div>
+                <input
+                  disabled={joined}
+                  type="text"
+                  value={groupId}
+                  onChange={(e) => {
+                    setGroupId(e.target.value);
+                    if (e.target.value.length === 6) {
+                      joinGroup(e.target.value);
+                    }
+                  }}
+                  className="w-12 text-[0.68rem] disabled:bg-gray-200 disabled:text-black"
+                  maxLength={6}
+                />
+              </div>
+              {joined ? (
+                <button
+                  className="text-neutral-500 hover:text-neutral-900"
+                  title="Leave group"
+                  onClick={() => {
+                    setGroupId('');
+                    setJoined(false);
+                  }}
+                >
+                  <UserX className="h-4 w-4" />
+                </button>
+              ) : (
+                <button
+                  className="text-neutral-500 hover:text-neutral-900"
+                  title="Create group"
+                  onClick={() => joinGroup(generateRandomString())}
+                >
+                  <UserPlus2 className="h-4 w-4" />
+                </button>
+              )}
             </div>
-            <button
-              onClick={() => {
-                if (!track.track) return;
-                setIsFullScreen(!isFullScreen);
-                setIsNextTracksOpen(false);
-                setIsLyricsOpen(false);
-              }}
-              disabled={!track.track}
-              className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
-            >
-              <Maximize2 className="h-4 w-4" />
-            </button>
+            <div className="flex items-center justify-end space-x-2">
+              <button
+                className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
+                title="lyrics"
+                disabled={!track.track?.lyrics}
+                onClick={() => {
+                  if (!track.track?.lyrics) return;
+                  setIsLyricsOpen(!isLyricsOpen);
+                  setIsFullScreen(false);
+                  setIsNextTracksOpen(false);
+                }}
+              >
+                <Mic2 className="h-4 w-4" />
+              </button>
+              <button
+                className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
+                title="Playlist"
+                disabled={!nextTracks.nextTracks}
+                onClick={() => {
+                  if (!nextTracks.nextTracks) return;
+                  setIsNextTracksOpen(!isNextTracksOpen);
+                  setIsFullScreen(false);
+                  setIsLyricsOpen(false);
+                }}
+              >
+                <ListMusic className="h-4 w-4" />
+              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  className="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                  onClick={() => setVolume(volume === 0 ? 50 : 0)}
+                >
+                  {volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                </button>
+                <Slider
+                  value={[volume]}
+                  max={100}
+                  step={1}
+                  className="w-24"
+                  onValueChange={handleVolumeChange}
+                />
+              </div>
+              <button
+                onClick={() => {
+                  if (!track.track) return;
+                  setIsFullScreen(!isFullScreen);
+                  setIsNextTracksOpen(false);
+                  setIsLyricsOpen(false);
+                }}
+                disabled={!track.track}
+                className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
+              >
+                <Maximize2 className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -457,3 +596,13 @@ const AudioPlayer: React.FC = () => {
 };
 
 export default AudioPlayer;
+
+function generateRandomString(): string {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    result += characters[randomIndex];
+  }
+  return result;
+}

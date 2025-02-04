@@ -2,7 +2,7 @@
 
 import { I18nProviderClient } from '@/locales/client';
 import { ITrackExt } from '@/models/track.model';
-import { createContext, Dispatch, SetStateAction, useState, useCallback, useMemo } from 'react';
+import { createContext, Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react';
 
 // Contexts
 export const playerContext = createContext<{
@@ -33,6 +33,14 @@ export const nextTracksContext = createContext<{
   shuffle: () => {},
 });
 
+export const socketIdContext = createContext<{
+  socketId: string | undefined;
+  setSocketId: Dispatch<SetStateAction<string | undefined>>;
+}>({
+  socketId: undefined,
+  setSocketId: () => {},
+});
+
 // Providers Component
 export default function Providers({
   children,
@@ -44,6 +52,7 @@ export default function Providers({
   const [track, setTrack] = useState<ITrackExt | undefined>();
   const [nextTracks, setNextTracks] = useState<ITrackExt[] | undefined>(undefined);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [socketId, setSocketId] = useState<string | undefined>(undefined);
 
   // Callback Functions
   const pause = useCallback(() => {
@@ -86,14 +95,17 @@ export default function Providers({
     () => ({ nextTracks, setNextTracks, shuffle }),
     [nextTracks, shuffle],
   );
+  const socketContextValue = useMemo(() => ({ socketId, setSocketId }), [socketId]);
 
   return (
     <I18nProviderClient locale={locale}>
-      <trackContext.Provider value={trackContextValue}>
-        <nextTracksContext.Provider value={nextTracksContextValue}>
-          <playerContext.Provider value={playerContextValue}>{children}</playerContext.Provider>
-        </nextTracksContext.Provider>
-      </trackContext.Provider>
+      <socketIdContext.Provider value={socketContextValue}>
+        <trackContext.Provider value={trackContextValue}>
+          <nextTracksContext.Provider value={nextTracksContextValue}>
+            <playerContext.Provider value={playerContextValue}>{children}</playerContext.Provider>
+          </nextTracksContext.Provider>
+        </trackContext.Provider>
+      </socketIdContext.Provider>
     </I18nProviderClient>
   );
 }

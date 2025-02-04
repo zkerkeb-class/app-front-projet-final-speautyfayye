@@ -1,4 +1,4 @@
-import { IArtist, IArtistExt, Artist } from '@/models/artist.model';
+import { Artist, IArtist, IArtistExt } from '@/models/artist.model';
 
 interface ArtistAPIResponse {
   data: IArtist[];
