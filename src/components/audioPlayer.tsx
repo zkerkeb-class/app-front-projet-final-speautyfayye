@@ -46,6 +46,7 @@ const AudioPlayer: React.FC = () => {
   const [volume, setVolume] = useState(50);
   const [isRepeating, setIsRepeating] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
+  const [fromEmit, setFromEmit] = useState(false);
 
   const [joined, setJoined] = useState(false);
   // const [transport, setTransport] = useState('N/A');
@@ -176,6 +177,10 @@ const AudioPlayer: React.FC = () => {
       } else {
         audioRef.current.pause();
       }
+      if (currentTime > 0 && fromEmit) {
+        setFromEmit(false);
+        audioRef.current.currentTime = currentTime;
+      }
     }
   }, [player.isPlaying, audioSrc]);
 
@@ -189,6 +194,7 @@ const AudioPlayer: React.FC = () => {
   useEffect(() => {
     if (group.groupId) {
       socket.on('action', (action) => {
+        console.log('🚀 ~ socket.on ~ action:', action);
         if (action.groupId !== group.groupId) return;
         if (action.action === 'play') {
           play(false);
@@ -204,17 +210,45 @@ const AudioPlayer: React.FC = () => {
       });
 
       socket.on('track', ({ currentTrack, nextTracksList, groupId }) => {
-        console.log('🚀 ~ socket.on ~ groupId:', groupId);
-        console.log('🚀 ~ socket.on ~ group.groupId:', group.groupId);
         if (groupId !== group.groupId) return;
         nextTracks.setNextTracks(nextTracksList);
         track.setTrack(currentTrack);
         player.play();
       });
 
+      socket.on('sync', ({ groupId, socketId }) => {
+        if (groupId !== group.groupId) return;
+        if (track) {
+          socket.emit('sync', {
+            currentTrack: track.track,
+            nextTracksList: nextTracks.nextTracks,
+            groupId: group.groupId,
+            currentTime: audioRef.current?.currentTime,
+            socketId,
+            playing: player.isPlaying,
+          });
+        }
+      });
+
+      socket.on(
+        'syncClient',
+        ({ currentTrack, nextTracksList, groupId, currentTime, socketId, playing }) => {
+          if (groupId !== group.groupId || socketId !== socket.id) return;
+          nextTracks.setNextTracks(nextTracksList);
+          track.setTrack(currentTrack);
+          if (playing) {
+            player.play();
+          }
+          setFromEmit(true);
+          setCurrentTime(currentTime);
+        },
+      );
+
       return () => {
         socket.off('action');
         socket.off('track');
+        socket.off('sync');
+        socket.off('syncClient');
       };
     }
   }, [group.groupId]);
@@ -249,10 +283,12 @@ const AudioPlayer: React.FC = () => {
   };
 
   const next = (emit: boolean) => {
-    if (!nextTracks.nextTracks || !track.track || !audioRef.current) return;
+    if (!nextTracks.nextTracks || !track.track) return;
 
     if (isRepeating) {
-      audioRef.current.currentTime = 0;
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+      }
       return;
     }
 
