@@ -206,6 +206,8 @@ const AudioPlayer: React.FC = () => {
           previous(false);
         } else if (action.action === 'seek') {
           handleTimeChange([action.time], false);
+        } else if (action.action === 'repeat') {
+          setIsRepeating(action.repeat);
         }
       });
 
@@ -561,10 +563,33 @@ const AudioPlayer: React.FC = () => {
                     {isRepeating ? (
                       <Repeat
                         className="h-4 w-4 text-green-600"
-                        onClick={() => setIsRepeating(false)}
+                        onClick={() => {
+                          if (!track.track) return;
+                          if (joined) {
+                            socket.emit('action', {
+                              action: 'repeat',
+                              repeat: false,
+                              groupId: group.groupId,
+                            });
+                          }
+                          setIsRepeating(false);
+                        }}
                       />
                     ) : (
-                      <Repeat className="h-4 w-4" onClick={() => setIsRepeating(true)} />
+                      <Repeat
+                        className="h-4 w-4"
+                        onClick={() => {
+                          if (!track.track) return;
+                          if (joined) {
+                            socket.emit('action', {
+                              action: 'repeat',
+                              repeat: true,
+                              groupId: group.groupId,
+                            });
+                          }
+                          setIsRepeating(true);
+                        }}
+                      />
                     )}
                   </button>
                 </div>
