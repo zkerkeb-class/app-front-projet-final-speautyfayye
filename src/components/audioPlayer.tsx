@@ -7,6 +7,9 @@ import { ITrack } from '@/models/track.model';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { socket } from '../app/socket';
 import { fetchAudio } from '../services/audio.service';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 
 import {
   Image,
@@ -57,11 +60,39 @@ const AudioPlayer: React.FC = () => {
   const nextTracks = useContext(nextTracksContext);
   const player = useContext(playerContext);
 
+  const [error, setError] = useState<string | null>(null);
+  const [isRetrying, setIsRetrying] = useState<boolean>(false);
   const getAudio = async (track: ITrack) => {
-    const audio = await fetchAudio(track.id);
-    setDuration(audio?.durationInSeconds ?? 0);
-    setAudioSrc(audio?.objectUrl ?? null);
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      setError(null);
+      setIsRetrying(false);
+      const audio = await fetchAudio(track.id);
+
+      if (!audio) {
+        throw new Error('Failed to load audio');
+      }
+
+      setDuration(audio.durationInSeconds ?? 0);
+      setAudioSrc(audio.objectUrl ?? null);
+    } catch (err) {
+      setError("Une erreur est survenue lors du chargement de l'audio");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRetry = async () => {
+    if (!track.track || isRetrying) return;
+    try {
+      setIsRetrying(true);
+      await getAudio(track.track);
+    } catch (error) {
+      console.error('Erreur lors de la nouvelle tentative:', error);
+      // L'erreur sera déjà gérée par getAudio
+    } finally {
+      setIsRetrying(false);
+    }
   };
 
   useEffect(() => {
@@ -273,6 +304,7 @@ const AudioPlayer: React.FC = () => {
         <audio
           ref={audioRef}
           src={audioSrc}
+          onError={() => setError('Une erreur est survenue lors de la lecture')}
           onTimeUpdate={handleProgressUpdate}
           onEnded={() => {
             if (isRepeating) {
@@ -294,6 +326,36 @@ const AudioPlayer: React.FC = () => {
           }}
         />
       )}
+
+      {/* Error Alert */}
+      {error && (
+        <div className="fixed left-1/2 top-6 z-50 w-[90%] max-w-md -translate-x-1/2 transform animate-slideDown">
+          <Alert
+            variant="destructive"
+            className="flex items-center justify-between gap-4 rounded-lg bg-red-600 p-4 text-white shadow-lg"
+          >
+            <AlertDescription className="flex items-center gap-2 text-sm">
+              <AlertCircle className="h-5 w-5 text-white" />
+              {error}
+            </AlertDescription>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isRetrying}
+              onClick={handleRetry}
+              className="border-white text-white transition hover:border-white hover:bg-red-500"
+            >
+              {isRetrying ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              Réessayer
+            </Button>
+          </Alert>
+        </div>
+      )}
+
       {/* Lyrics */}
       {isLyricsOpen && (
         <div className="fixed bottom-0 left-0 right-0 z-50 h-screen overflow-y-auto border-t border-neutral-800 bg-white pb-28 dark:border-neutral-800 dark:bg-black">
