@@ -108,9 +108,12 @@ const AlbumContent = ({ album }: AlbumContentProps) => {
           <div className="flex flex-col gap-y-1">
             {album.tracks?.length ? (
               <TracksList
-                tracks={album.tracks.map((t) => {
-                  return { ...t, artist: album.artist };
-                })}
+                tracks={album.tracks
+                  .slice()
+                  .sort((a, b) => a.trackNumber - b.trackNumber)
+                  .map((t) => {
+                    return { ...t, artist: album.artist };
+                  })}
                 onClick={handleTrackClick}
                 entityId={album.id}
               />
