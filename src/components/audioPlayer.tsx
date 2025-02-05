@@ -1,6 +1,6 @@
 'use client';
 
-import { groupContext, nextTracksContext, playerContext, trackContext } from '@/app/providers';
+import { groupContext, nextTracksContext, playerContext, trackContext, trackHistoryContext } from '@/app/providers';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -59,7 +59,7 @@ const AudioPlayer: React.FC = () => {
   const nextTracks = useContext(nextTracksContext);
   const player = useContext(playerContext);
   const group = useContext(groupContext);
-
+  const trackH = useContext(trackHistoryContext);
   const [error, setError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState<boolean>(false);
   const getAudio = async (track: ITrack) => {
@@ -163,14 +163,6 @@ const AudioPlayer: React.FC = () => {
   };
 
   useEffect(() => {
-    if (track.track) {
-      setIsLoading(true);
-      getAudio(track.track);
-      player.play();
-    }
-  }, [track.track]);
-
-  useEffect(() => {
     if (audioRef.current && audioSrc) {
       if (player.isPlaying) {
         audioRef.current.play();
@@ -183,14 +175,37 @@ const AudioPlayer: React.FC = () => {
       }
     }
   }, [player.isPlaying, audioSrc]);
-
+  
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume / 100;
     }
   }, [volume]);
-
+  
   //#region Socket events
+  useEffect(() => {
+    if (track.track) {
+      setIsLoading(true);
+      getAudio(track.track);
+      player.play();
+      socket.emit('trackHistory', { 
+        trackId: track.track.id,
+        trackTitle: track.track.title,
+        trackDuration: track.track.duration, 
+        trackAlbumTitle: track.track.album?.title,
+        trackArtistName: typeof track.track.artist !== 'string' ? track.track.artist?.name : 'Unknown Artist',
+        trackAudio: track.track.audio
+      });
+      socket.on('trackHistory', ({ trackHistory }) => {
+        trackH.setTrackHistory(trackHistory);
+      });
+    }
+
+    return () => {
+      socket.off('trackHistory');
+    }
+  }, [track.track]);
+
   useEffect(() => {
     if (group.groupId) {
       socket.on('action', (action) => {
