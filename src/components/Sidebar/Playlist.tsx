@@ -1,12 +1,14 @@
 'use client';
-
+import { useContext, useEffect } from 'react';
 import { useScopedI18n } from '@/locales/client';
 import Link from 'next/link';
 import { HiOutlinePlus } from 'react-icons/hi';
 import { IoLibrary } from 'react-icons/io5';
+import { trackHistoryContext } from '@/app/providers'
 
 const Playlist = () => {
   const translation = useScopedI18n('playlist');
+  const trackHistory = useContext(trackHistoryContext);
 
   return (
     <div className="h-[calc(88vh-12rem)] w-full space-y-4 bg-neutral-100 pb-3 dark:bg-neutral-800/30">
@@ -32,7 +34,15 @@ const Playlist = () => {
           <button className="h-8 w-fit rounded-full bg-neutral-900 px-4 text-sm font-semibold text-neutral-50 duration-100 ease-in-out hover:scale-105 dark:bg-neutral-50 dark:text-neutral-950">
             <Link href="/createPlaylist">{translation('createPlaylist')}</Link>
           </button>
-        </div>
+        </div>  
+ 
+        <p>
+          {trackHistory.trackHistory.map((track) => (
+            <div key={track.id}>
+              <li>{track.title} - {typeof track.artist === 'string' ? track.artist : track.artist?.name}</li>
+            </div>
+          ))}
+        </p>
       </div>
     </div>
   );

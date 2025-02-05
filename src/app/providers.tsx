@@ -23,6 +23,14 @@ export const trackContext = createContext<{
   setTrack: () => {},
 });
 
+export const trackHistoryContext = createContext<{
+  trackHistory: ITrackExt[];
+  setTrackHistory: Dispatch<SetStateAction<ITrackExt[]>>;
+}>({
+  trackHistory: [],
+  setTrackHistory: () => {},
+});
+
 export const nextTracksContext = createContext<{
   nextTracks: ITrackExt[] | undefined;
   setNextTracks: Dispatch<SetStateAction<ITrackExt[] | undefined>>;
@@ -51,6 +59,7 @@ export default function Providers({
   const [nextTracks, setNextTracks] = useState<ITrackExt[] | undefined>(undefined);
   const [isPlaying, setIsPlaying] = useState(false);
   const [groupId, setGroupId] = useState<string | undefined>(undefined);
+  const [trackHistory, setTrackHistory] = useState<ITrackExt[]>([]);
 
   // Callback Functions
   const pause = useCallback(() => {
@@ -66,14 +75,17 @@ export default function Providers({
   const trackContextValue = useMemo(() => ({ track, setTrack }), [track]);
   const nextTracksContextValue = useMemo(() => ({ nextTracks, setNextTracks }), [nextTracks]);
   const groupContextValue = useMemo(() => ({ groupId, setGroupId }), [groupId]);
+  const trackHistoryContextValue = useMemo(() => ({ trackHistory, setTrackHistory }), [trackHistory]);
 
   return (
     <I18nProviderClient locale={locale}>
       <groupContext.Provider value={groupContextValue}>
         <trackContext.Provider value={trackContextValue}>
-          <nextTracksContext.Provider value={nextTracksContextValue}>
-            <playerContext.Provider value={playerContextValue}>{children}</playerContext.Provider>
-          </nextTracksContext.Provider>
+            <nextTracksContext.Provider value={nextTracksContextValue}>
+              <trackHistoryContext.Provider value={trackHistoryContextValue}>
+                  <playerContext.Provider value={playerContextValue}>{children}</playerContext.Provider>
+              </trackHistoryContext.Provider>
+            </nextTracksContext.Provider>
         </trackContext.Provider>
       </groupContext.Provider>
     </I18nProviderClient>
