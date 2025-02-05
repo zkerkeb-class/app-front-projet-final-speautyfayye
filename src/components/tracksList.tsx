@@ -1,3 +1,4 @@
+// TracksList.tsx
 import { playerContext, trackContext } from '@/app/providers';
 import { formatDuration } from '@/constants/data';
 import { IArtist } from '@/models/artist.model';
@@ -12,6 +13,7 @@ interface IProps {
   onClick: (track: ITrackExt) => void;
   deletable?: boolean;
   entityId?: number;
+  truncateText?: (text: string, maxLength?: number) => string;
 }
 
 export default function TracksList(props: IProps) {
@@ -114,7 +116,7 @@ export default function TracksList(props: IProps) {
                         audio.track?.id === track.id ? 'opacity-0' : ''
                       }`}
                     >
-                      {track.trackNumber.toString().padStart(2, '0')}
+                      {(track.trackNumber ?? i + 1).toString().padStart(2, '0')}
                     </span>
                     <div
                       className={`absolute -top-2 text-green-500 opacity-0 group-hover:opacity-100 ${
@@ -136,7 +138,7 @@ export default function TracksList(props: IProps) {
                           : 'text-neutral-900 group-hover:text-green-400 dark:text-white'
                       }`}
                     >
-                      {track.title}
+                      {props.truncateText ? props.truncateText(track.title) : track.title}
                     </p>
                   </div>
                   {track.artist && (
@@ -148,7 +150,9 @@ export default function TracksList(props: IProps) {
                             : 'text-neutral-900 group-hover:text-green-400 dark:text-white'
                         }`}
                       >
-                        {(track.artist as IArtist)?.name ?? 'Artiste inconnu'}
+                        {props.truncateText
+                          ? props.truncateText((track.artist as IArtist)?.name ?? 'Artiste inconnu')
+                          : ((track.artist as IArtist)?.name ?? 'Artiste inconnu')}
                       </p>
                     </div>
                   )}
@@ -172,7 +176,7 @@ export default function TracksList(props: IProps) {
                         className="cursor-pointer whitespace-nowrap py-1 text-sm hover:text-green-500"
                         onClick={() => addToPlaylist(playlist.id)}
                       >
-                        {playlist.title}
+                        {props.truncateText ? props.truncateText(playlist.title) : playlist.title}
                       </p>
                     ))
                   ) : (
