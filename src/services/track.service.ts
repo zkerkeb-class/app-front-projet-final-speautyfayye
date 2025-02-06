@@ -1,5 +1,5 @@
-import { ITrack, ITrackExt, Track } from '@/models/track.model'; // Assurez-vous d'importer les interfaces et classes nécessaires
 import { ITrackFilters } from '@/models/filter.model';
+import { ITrack, ITrackExt, Track } from '@/models/track.model'; // Assurez-vous d'importer les interfaces et classes nécessaires
 interface TrackAPIResponse {
   data: ITrack[]; // Structure des données attendues depuis l'API
 }
@@ -42,4 +42,18 @@ export async function getTrackById(id: number): Promise<ITrackExt> {
 
   const trackData: ITrackExtAPIResponse = await response.json();
   return trackData.data;
+}
+
+export async function getMostPlayedTracks(): Promise<Track[]> {
+  console.log(`${process.env.NEXT_PUBLIC_BACKEND_API}/track/most-played`);
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/track/most-played`);
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch most played tracks');
+  }
+
+  const tracksData: TrackAPIResponse = await response.json();
+
+  return tracksData.data.map((item) => new Track(item));
 }

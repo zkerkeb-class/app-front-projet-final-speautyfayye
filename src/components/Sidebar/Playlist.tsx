@@ -1,51 +1,53 @@
 // Playlist.tsx
 'use client';
-import { useContext } from 'react';
-import { useScopedI18n } from '@/locales/client';
-import Link from 'next/link';
-import { HiOutlinePlus } from 'react-icons/hi';
-import { IoLibrary } from 'react-icons/io5';
 import {
   groupContext,
+  mostPlayedContext,
   nextTracksContext,
   playerContext,
   trackContext,
   trackHistoryContext,
 } from '@/app/providers';
-import TracksList from '../tracksList';
 import { socket } from '@/app/socket';
+import { useScopedI18n } from '@/locales/client';
 import { ITrack } from '@/models/track.model';
+import Link from 'next/link';
+import { useContext } from 'react';
+import { HiOutlinePlus } from 'react-icons/hi';
+import { IoLibrary } from 'react-icons/io5';
+import TracksList from '../tracksList';
 
 const Playlist = () => {
   const translation = useScopedI18n('playlist');
-  const trackHistory = useContext(trackHistoryContext);
-  const audio = useContext(trackContext);
-  const nextTracks = useContext(nextTracksContext);
-  const player = useContext(playerContext);
-  const group = useContext(groupContext);
+  const trackHistoryCtx = useContext(trackHistoryContext);
+  const audioCtx = useContext(trackContext);
+  const nextTracksCtx = useContext(nextTracksContext);
+  const playerCtx = useContext(playerContext);
+  const groupCtx = useContext(groupContext);
+  const mostPlayedCtx = useContext(mostPlayedContext);
 
   const truncateText = (text: string, maxLength: number = 20) => {
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
   };
 
   const handleTrackClick = (track: ITrack) => {
-    if (audio.track && track.id === audio.track.id) {
-      if (player.isPlaying) {
-        player.pause();
+    if (audioCtx.track && track.id === audioCtx.track.id) {
+      if (playerCtx.isPlaying) {
+        playerCtx.pause();
       } else {
-        player.play();
+        playerCtx.play();
       }
     } else {
-      if (group?.groupId) {
+      if (groupCtx?.groupId) {
         socket.emit('track', {
           currentTrack: track,
           nextTracksList: [track],
-          groupId: group.groupId,
+          groupId: groupCtx.groupId,
         });
       } else {
-        audio.setTrack(track);
-        nextTracks.setNextTracks([track]);
-        player.play();
+        audioCtx.setTrack(track);
+        nextTracksCtx.setNextTracks([track]);
+        playerCtx.play();
       }
     }
   };
@@ -76,13 +78,32 @@ const Playlist = () => {
           </button>
         </div>
 
-        {trackHistory.trackHistory.length > 0 && (
+        {trackHistoryCtx.trackHistory.length > 0 && (
           <div className="space-y-4">
             <h2 className="px-3 text-lg font-semibold text-neutral-900 dark:text-neutral-50">
               Récemments joués
             </h2>
             <div className="space-y-2">
-              {trackHistory.trackHistory.map((track) => (
+              {trackHistoryCtx.trackHistory.map((track) => (
+                <TracksList
+                  key={track.id}
+                  entityId={track.id}
+                  tracks={[track]}
+                  onClick={handleTrackClick}
+                  truncateText={truncateText}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {mostPlayedCtx.mostPlayed.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="px-3 text-lg font-semibold text-neutral-900 dark:text-neutral-50">
+              Les plus écoutés
+            </h2>
+            <div className="space-y-2">
+              {mostPlayedCtx.mostPlayed.map((track) => (
                 <TracksList
                   key={track.id}
                   entityId={track.id}

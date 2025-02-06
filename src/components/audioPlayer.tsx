@@ -1,6 +1,13 @@
 'use client';
 
-import { groupContext, nextTracksContext, playerContext, trackContext, trackHistoryContext } from '@/app/providers';
+import {
+  groupContext,
+  mostPlayedContext,
+  nextTracksContext,
+  playerContext,
+  trackContext,
+  trackHistoryContext,
+} from '@/app/providers';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -10,6 +17,7 @@ import { AlertCircle, RefreshCw } from 'lucide-react';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { socket } from '../app/socket';
 import { fetchAudio } from '../services/audio.service';
+import { getMostPlayedTracks } from '../services/track.service'; //
 
 import {
   Image,
@@ -55,11 +63,13 @@ const AudioPlayer: React.FC = () => {
   const [isNextTracksOpen, setIsNextTracksOpen] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
-  const track = useContext(trackContext);
-  const nextTracks = useContext(nextTracksContext);
-  const player = useContext(playerContext);
-  const group = useContext(groupContext);
-  const trackH = useContext(trackHistoryContext);
+  const trackCtx = useContext(trackContext);
+  const nextTracksCtx = useContext(nextTracksContext);
+  const playerCtx = useContext(playerContext);
+  const groupCtx = useContext(groupContext);
+  const trackHistoryCtx = useContext(trackHistoryContext);
+  const mostPlayedCtx = useContext(mostPlayedContext);
+
   const [error, setError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState<boolean>(false);
   const getAudio = async (track: ITrack) => {
@@ -83,10 +93,10 @@ const AudioPlayer: React.FC = () => {
   };
 
   const handleRetry = async () => {
-    if (!track.track || isRetrying) return;
+    if (!trackCtx.track || isRetrying) return;
     try {
       setIsRetrying(true);
-      await getAudio(track.track);
+      await getAudio(trackCtx.track);
     } catch (error) {
       console.error('Erreur lors de la nouvelle tentative:', error);
       // L'erreur sera déjà gérée par getAudio
@@ -151,7 +161,7 @@ const AudioPlayer: React.FC = () => {
     if (emit && joined) {
       socket.emit('action', {
         action: 'seek',
-        groupId: group.groupId,
+        groupId: groupCtx.groupId,
         time: value[0],
       });
     }
@@ -164,7 +174,7 @@ const AudioPlayer: React.FC = () => {
 
   useEffect(() => {
     if (audioRef.current && audioSrc) {
-      if (player.isPlaying) {
+      if (playerCtx.isPlaying) {
         audioRef.current.play();
       } else {
         audioRef.current.pause();
@@ -174,43 +184,51 @@ const AudioPlayer: React.FC = () => {
         audioRef.current.currentTime = currentTime;
       }
     }
-  }, [player.isPlaying, audioSrc]);
-  
+  }, [playerCtx.isPlaying, audioSrc]);
+
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume / 100;
     }
   }, [volume]);
-  
+
   //#region Socket events
   useEffect(() => {
-    if (track.track) {
+    if (trackCtx.track) {
       setIsLoading(true);
-      getAudio(track.track);
-      player.play();
-      socket.emit('trackHistory', { 
-        trackId: track.track.id,
-        trackTitle: track.track.title,
-        trackDuration: track.track.duration, 
-        trackAlbumTitle: track.track.album?.title,
-        trackArtistName: typeof track.track.artist !== 'string' ? track.track.artist?.name : 'Unknown Artist',
-        trackAudio: track.track.audio
+      getAudio(trackCtx.track);
+      playerCtx.play();
+      socket.emit('trackHistory', {
+        trackId: trackCtx.track.id,
+        trackTitle: trackCtx.track.title,
+        trackDuration: trackCtx.track.duration,
+        trackAlbumTitle: trackCtx.track.album?.title,
+        trackArtistName:
+          typeof trackCtx.track.artist !== 'string'
+            ? trackCtx.track.artist?.name
+            : 'Unknown Artist',
+        trackAudio: trackCtx.track.audio,
       });
-      socket.on('trackHistory', ({ trackHistory }) => {
-        trackH.setTrackHistory(trackHistory);
+      socket.on('trackHistory', async ({ trackHistory, aaaaaaaaaaaaaaaa }) => {
+        console.log('🚀 ~ socket.on ~ aaaaaaaaaaaaaaaa:', aaaaaaaaaaaaaaaa);
+        trackHistoryCtx.setTrackHistory(trackHistory);
+        const mostPlayed = await getMostPlayedTracks();
+        if (mostPlayed) {
+          mostPlayedCtx.setMostPlayed(mostPlayed);
+        }
       });
     }
 
     return () => {
       socket.off('trackHistory');
-    }
-  }, [track.track]);
+    };
+  }, [trackCtx.track]);
 
   useEffect(() => {
-    if (group.groupId) {
+    if (groupCtx.groupId) {
       socket.on('action', (action) => {
         console.log('🚀 ~ socket.on ~ action:', action);
-        if (action.groupId !== group.groupId) return;
+        if (action.groupId !== groupCtx.groupId) return;
         if (action.action === 'play') {
           play(false);
         } else if (action.action === 'pause') {
@@ -225,27 +243,27 @@ const AudioPlayer: React.FC = () => {
           setIsRepeating(action.repeat);
         } else if (action.action === 'shuffle') {
           suffle(false);
-          nextTracks.setNextTracks(action.nextTracksList);
+          nextTracksCtx.setNextTracks(action.nextTracksList);
         }
       });
 
       socket.on('track', ({ currentTrack, nextTracksList, groupId }) => {
-        if (groupId !== group.groupId) return;
-        nextTracks.setNextTracks(nextTracksList);
-        track.setTrack(currentTrack);
-        player.play();
+        if (groupId !== groupCtx.groupId) return;
+        nextTracksCtx.setNextTracks(nextTracksList);
+        trackCtx.setTrack(currentTrack);
+        playerCtx.play();
       });
 
       socket.on('sync', ({ groupId, socketId }) => {
-        if (groupId !== group.groupId) return;
-        if (track) {
+        if (groupId !== groupCtx.groupId) return;
+        if (trackCtx) {
           socket.emit('sync', {
-            currentTrack: track.track,
-            nextTracksList: nextTracks.nextTracks,
-            groupId: group.groupId,
+            currentTrack: trackCtx.track,
+            nextTracksList: nextTracksCtx.nextTracks,
+            groupId: groupCtx.groupId,
             currentTime: audioRef.current?.currentTime,
             socketId,
-            playing: player.isPlaying,
+            playing: playerCtx.isPlaying,
           });
         }
       });
@@ -253,11 +271,11 @@ const AudioPlayer: React.FC = () => {
       socket.on(
         'syncClient',
         ({ currentTrack, nextTracksList, groupId, currentTime, socketId, playing }) => {
-          if (groupId !== group.groupId || socketId !== socket.id) return;
-          nextTracks.setNextTracks(nextTracksList);
-          track.setTrack(currentTrack);
+          if (groupId !== groupCtx.groupId || socketId !== socket.id) return;
+          nextTracksCtx.setNextTracks(nextTracksList);
+          trackCtx.setTrack(currentTrack);
           if (playing) {
-            player.play();
+            playerCtx.play();
           }
           setFromEmit(true);
           setCurrentTime(currentTime);
@@ -271,7 +289,7 @@ const AudioPlayer: React.FC = () => {
         socket.off('syncClient');
       };
     }
-  }, [group.groupId]);
+  }, [groupCtx.groupId]);
 
   const joinGroup = (id?: string) => {
     if (!id) {
@@ -279,93 +297,93 @@ const AudioPlayer: React.FC = () => {
     }
     socket.emit('join', { groupId: id, socketId: socket.id });
     setJoined(true);
-    group.setGroupId(id);
+    groupCtx.setGroupId(id);
   };
 
   const play = (emit: boolean) => {
     if (emit && joined) {
       socket.emit('action', {
         action: 'play',
-        groupId: group.groupId,
+        groupId: groupCtx.groupId,
       });
     }
-    player.play();
+    playerCtx.play();
   };
 
   const pause = (emit: boolean) => {
     if (emit && joined) {
       socket.emit('action', {
         action: 'pause',
-        groupId: group.groupId,
+        groupId: groupCtx.groupId,
       });
     }
-    player.pause();
+    playerCtx.pause();
   };
 
   const next = () => {
-    if (!nextTracks.nextTracks || !track.track) {
+    if (!nextTracksCtx.nextTracks || !trackCtx.track) {
       return;
     }
 
     if (isRepeating) {
       socket.emit('action', {
         action: 'next',
-        groupId: group.groupId,
-        currentTrack: track.track,
-        nextTracksList: nextTracks.nextTracks,
+        groupId: groupCtx.groupId,
+        currentTrack: trackCtx.track,
+        nextTracksList: nextTracksCtx.nextTracks,
       });
       return;
     }
 
-    const currentIndex = nextTracks.nextTracks?.map((t) => t.id)?.indexOf(track.track.id);
-    const next = nextTracks.nextTracks?.at(currentIndex! + 1);
+    const currentIndex = nextTracksCtx.nextTracks?.map((t) => t.id)?.indexOf(trackCtx.track.id);
+    const next = nextTracksCtx.nextTracks?.at(currentIndex! + 1);
 
     if (next) {
       if (joined) {
         socket.emit('action', {
           action: 'next',
-          groupId: group.groupId,
+          groupId: groupCtx.groupId,
           currentTrack: next,
-          nextTracksList: nextTracks.nextTracks,
+          nextTracksList: nextTracksCtx.nextTracks,
         });
       } else {
-        track.setTrack(next);
+        trackCtx.setTrack(next);
       }
     }
   };
 
   const previous = () => {
-    if (!nextTracks.nextTracks || !track.track) return;
+    if (!nextTracksCtx.nextTracks || !trackCtx.track) return;
 
-    const currentIndex = nextTracks.nextTracks?.map((t) => t.id)?.indexOf(track.track.id);
+    const currentIndex = nextTracksCtx.nextTracks?.map((t) => t.id)?.indexOf(trackCtx.track.id);
 
-    const previous = nextTracks.nextTracks?.at(currentIndex! - 1);
+    const previous = nextTracksCtx.nextTracks?.at(currentIndex! - 1);
     if (previous) {
       if (joined) {
         socket.emit('action', {
           action: 'next',
-          groupId: group.groupId,
+          groupId: groupCtx.groupId,
           currentTrack: previous,
-          nextTracksList: nextTracks.nextTracks,
+          nextTracksList: nextTracksCtx.nextTracks,
         });
       } else {
-        track.setTrack(previous);
+        trackCtx.setTrack(previous);
       }
     }
   };
 
   const suffle = (emit: boolean) => {
-    if (!nextTracks.nextTracks) return;
-    const list = suffleList(nextTracks.nextTracks, track.track);
+    if (!nextTracksCtx.nextTracks) return;
+    const list = suffleList(nextTracksCtx.nextTracks, trackCtx.track);
     if (emit && joined) {
       socket.emit('action', {
         action: 'shuffle',
         nextTracksList: list,
-        groupId: group.groupId,
+        groupId: groupCtx.groupId,
       });
       setIsShuffling(!isShuffling);
     } else {
-      nextTracks.setNextTracks(list);
+      nextTracksCtx.setNextTracks(list);
       if (isShuffling) {
         setIsShuffling(false);
         return;
@@ -377,8 +395,8 @@ const AudioPlayer: React.FC = () => {
   //#endregion
 
   const handleTrackChange = (trackToListen: ITrack, nextTracksList: ITrack[]) => {
-    nextTracks.setNextTracks(nextTracksList);
-    track.setTrack(trackToListen);
+    nextTracksCtx.setNextTracks(nextTracksList);
+    trackCtx.setTrack(trackToListen);
   };
 
   return (
@@ -401,7 +419,7 @@ const AudioPlayer: React.FC = () => {
 
       {/* Error Alert */}
       {error && (
-        <div className="animate-slideDown fixed left-1/2 top-6 z-50 w-[90%] max-w-md -translate-x-1/2 transform">
+        <div className="fixed left-1/2 top-6 z-50 w-[90%] max-w-md -translate-x-1/2 transform animate-slideDown">
           <Alert
             variant="destructive"
             className="flex items-center justify-between gap-4 rounded-lg bg-red-600 p-4 text-white shadow-lg"
@@ -438,9 +456,9 @@ const AudioPlayer: React.FC = () => {
                 onClick={() => setIsLyricsOpen(false)}
               />
             </div>
-            {track.track?.lyrics && (
+            {trackCtx.track?.lyrics && (
               <p className="max-w-2xl">
-                {track.track.lyrics.split('\n').map((line, index) => (
+                {trackCtx.track.lyrics.split('\n').map((line, index) => (
                   <React.Fragment key={index}>
                     {line}
                     <br className="my-1" />
@@ -463,8 +481,8 @@ const AudioPlayer: React.FC = () => {
             </div>
             <div className="min-w-[60%]">
               <h2 className="mb-4 text-4xl">Suivantes</h2>
-              {nextTracks?.nextTracks?.length ? (
-                <TracksList tracks={nextTracks.nextTracks} onClick={() => {}} />
+              {nextTracksCtx?.nextTracks?.length ? (
+                <TracksList tracks={nextTracksCtx.nextTracks} onClick={() => {}} />
               ) : (
                 'No next tracks'
               )}
@@ -473,7 +491,7 @@ const AudioPlayer: React.FC = () => {
         </div>
       )}
       {/* FullScreen */}
-      {isFullScreen && track.track && (
+      {isFullScreen && trackCtx.track && (
         <div className="fixed bottom-0 left-0 right-0 z-50 h-screen overflow-y-auto border-t border-neutral-800 bg-white pb-28 dark:border-neutral-800 dark:bg-black">
           <div className="relative flex min-h-full flex-col items-center justify-center gap-8 p-4">
             <div className="min-w-[60%]">
@@ -485,12 +503,12 @@ const AudioPlayer: React.FC = () => {
               </div>
               <div className="flex gap-4">
                 <div className="h-72 w-72 object-cover">
-                  <StreamImage imageId={track.track.picture} size={800} />
+                  <StreamImage imageId={trackCtx.track.picture} size={800} />
                 </div>
                 <div>
-                  <h2 className="text-2xl">{track.track?.title}</h2>
+                  <h2 className="text-2xl">{trackCtx.track?.title}</h2>
                   <h2 className="text-xl">
-                    {(track.track?.artist as IArtist)?.name ?? 'Artiste inconnu'}
+                    {(trackCtx.track?.artist as IArtist)?.name ?? 'Artiste inconnu'}
                   </h2>
                 </div>
               </div>
@@ -506,16 +524,16 @@ const AudioPlayer: React.FC = () => {
         <div className="grid h-full grid-cols-1 items-center px-4 sm:grid-cols-3">
           {/* Left section - Song info */}
           <div className="flex items-center space-x-4">
-            {track.track && (
+            {trackCtx.track && (
               <>
-                {track.track.picture ? (
+                {trackCtx.track.picture ? (
                   <div className="flex h-14 w-14 items-center justify-center rounded border">
                     <StreamImage
-                      imageId={track.track.picture}
+                      imageId={trackCtx.track.picture}
                       width={16}
                       height={16}
                       size={200}
-                      alt={track.track.title}
+                      alt={trackCtx.track.title}
                     />
                   </div>
                 ) : (
@@ -526,10 +544,10 @@ const AudioPlayer: React.FC = () => {
 
                 <div>
                   <div className="text-sm font-medium text-neutral-900 dark:text-white">
-                    {track.track?.title ?? 'Titre inconnu'}
+                    {trackCtx.track?.title ?? 'Titre inconnu'}
                   </div>
                   <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                    {(track.track?.artist as IArtist)?.name ?? 'Artiste inconnu'}
+                    {(trackCtx.track?.artist as IArtist)?.name ?? 'Artiste inconnu'}
                   </div>
                 </div>
               </>
@@ -548,7 +566,7 @@ const AudioPlayer: React.FC = () => {
                   <button
                     className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
                     title="Shuffle"
-                    disabled={!nextTracks.nextTracks}
+                    disabled={!nextTracksCtx.nextTracks}
                     onClick={() => suffle(true)}
                   >
                     <Shuffle className={`${isShuffling ? 'text-green-500' : ''} h-4 w-4`} />
@@ -556,7 +574,7 @@ const AudioPlayer: React.FC = () => {
                   <button
                     className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
                     title="Previous"
-                    disabled={!nextTracks.nextTracks}
+                    disabled={!nextTracksCtx.nextTracks}
                     onClick={() => previous()}
                   >
                     <SkipBack className="h-5 w-5" />
@@ -564,14 +582,14 @@ const AudioPlayer: React.FC = () => {
                   <button
                     className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-900 transition hover:scale-105 dark:bg-white"
                     onClick={() => {
-                      if (player.isPlaying) {
+                      if (playerCtx.isPlaying) {
                         pause(true);
                       } else {
                         play(true);
                       }
                     }}
                   >
-                    {player.isPlaying ? (
+                    {playerCtx.isPlaying ? (
                       <Pause className="h-5 w-5 text-white dark:text-black" />
                     ) : (
                       <Play className="h-5 w-5 text-white dark:text-black" />
@@ -580,7 +598,7 @@ const AudioPlayer: React.FC = () => {
                   <button
                     className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
                     title="Next"
-                    disabled={!nextTracks.nextTracks}
+                    disabled={!nextTracksCtx.nextTracks}
                     onClick={() => next()}
                   >
                     <SkipForward className="h-5 w-5" />
@@ -594,12 +612,12 @@ const AudioPlayer: React.FC = () => {
                       <Repeat
                         className="h-4 w-4 text-green-600"
                         onClick={() => {
-                          if (!track.track) return;
+                          if (!trackCtx.track) return;
                           if (joined) {
                             socket.emit('action', {
                               action: 'repeat',
                               repeat: false,
-                              groupId: group.groupId,
+                              groupId: groupCtx.groupId,
                             });
                           }
                           setIsRepeating(false);
@@ -609,12 +627,12 @@ const AudioPlayer: React.FC = () => {
                       <Repeat
                         className="h-4 w-4"
                         onClick={() => {
-                          if (!track.track) return;
+                          if (!trackCtx.track) return;
                           if (joined) {
                             socket.emit('action', {
                               action: 'repeat',
                               repeat: true,
-                              groupId: group.groupId,
+                              groupId: groupCtx.groupId,
                             });
                           }
                           setIsRepeating(true);
@@ -650,9 +668,9 @@ const AudioPlayer: React.FC = () => {
                 <input
                   disabled={joined}
                   type="text"
-                  value={group?.groupId ?? ''}
+                  value={groupCtx?.groupId ?? ''}
                   onChange={(e) => {
-                    group.setGroupId(e.target.value);
+                    groupCtx.setGroupId(e.target.value);
                     if (e.target.value.length === 6) {
                       joinGroup(e.target.value);
                     }
@@ -666,7 +684,7 @@ const AudioPlayer: React.FC = () => {
                   className="text-neutral-500 hover:text-neutral-900"
                   title="Leave group"
                   onClick={() => {
-                    group.setGroupId(undefined);
+                    groupCtx.setGroupId(undefined);
                     setJoined(false);
                   }}
                 >
@@ -686,9 +704,9 @@ const AudioPlayer: React.FC = () => {
               <button
                 className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
                 title="lyrics"
-                disabled={!track.track?.lyrics}
+                disabled={!trackCtx.track?.lyrics}
                 onClick={() => {
-                  if (!track.track?.lyrics) return;
+                  if (!trackCtx.track?.lyrics) return;
                   setIsLyricsOpen(!isLyricsOpen);
                   setIsFullScreen(false);
                   setIsNextTracksOpen(false);
@@ -699,9 +717,9 @@ const AudioPlayer: React.FC = () => {
               <button
                 className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
                 title="Playlist"
-                disabled={!nextTracks.nextTracks}
+                disabled={!nextTracksCtx.nextTracks}
                 onClick={() => {
-                  if (!nextTracks.nextTracks) return;
+                  if (!nextTracksCtx.nextTracks) return;
                   setIsNextTracksOpen(!isNextTracksOpen);
                   setIsFullScreen(false);
                   setIsLyricsOpen(false);
@@ -726,12 +744,12 @@ const AudioPlayer: React.FC = () => {
               </div>
               <button
                 onClick={() => {
-                  if (!track.track) return;
+                  if (!trackCtx.track) return;
                   setIsFullScreen(!isFullScreen);
                   setIsNextTracksOpen(false);
                   setIsLyricsOpen(false);
                 }}
-                disabled={!track.track}
+                disabled={!trackCtx.track}
                 className="text-neutral-500 hover:text-neutral-900 disabled:cursor-default disabled:opacity-50 dark:text-neutral-400 dark:hover:text-white"
               >
                 <Maximize2 className="h-4 w-4" />
